@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>パチスロ収支表</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0b1220" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>パチスロ収支表</h1>
+    <div class="top-actions">
+      <button id="btnExport" class="btn">CSV出力</button>
+      <button id="btnAdd" class="btn primary">＋ 追加</button>
+    </div>
+  </header>
+
+  <!-- ロック画面 -->
+  <section id="lockScreen" class="lock hidden">
+    <div class="card">
+      <h2>ロック中</h2>
+      <p class="muted">Face ID（パスキー）またはPINで解除できます。</p>
+      <div class="row gap">
+        <button id="btnUnlockPasskey" class="btn primary">Face IDで解除</button>
+        <button id="btnUnlockPIN" class="btn">PINで解除</button>
+      </div>
+      <div id="pinArea" class="hidden">
+        <input id="pinInput" class="input" type="password" inputmode="numeric" placeholder="PIN（4〜8桁）" />
+        <div class="row gap">
+          <button id="btnPinOk" class="btn primary">OK</button>
+          <button id="btnPinCancel" class="btn">キャンセル</button>
+        </div>
+      </div>
+      <p id="lockMsg" class="msg"></p>
+    </div>
+  </section>
+
+  <main class="container">
+    <nav class="tabs">
+      <button class="tab active" data-tab="ledger">明細</button>
+      <button class="tab" data-tab="summary">集計</button>
+      <button class="tab" data-tab="settings">設定</button>
+    </nav>
+
+    <!-- 明細 -->
+    <section id="tab-ledger" class="panel">
+      <div class="filters">
+        <select id="filterYear" class="select"></select>
+        <select id="filterMonth" class="select"></select>
+        <button id="btnClearFilter" class="btn">フィルタ解除</button>
+      </div>
+      <ul id="entryList" class="list"></ul>
+      <div id="emptyState" class="empty muted hidden">まだデータがありません。「＋追加」から入力してください。</div>
+    </section>
+
+    <!-- 集計 -->
+    <section id="tab-summary" class="panel hidden">
+      <div class="grid">
+        <div class="stat card"><div class="k">総収支</div><div id="statTotal" class="v"></div></div>
+        <div class="stat card"><div class="k">勝率</div><div id="statWinRate" class="v"></div></div>
+        <div class="stat card"><div class="k">平均投資</div><div id="statAvgInv" class="v"></div></div>
+        <div class="stat card"><div class="k">平均回収</div><div id="statAvgPay" class="v"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="row space">
+          <h3>月別収支グラフ</h3>
+          <select id="chartMode" class="select">
+            <option value="month">月別</option>
+            <option value="year">年別</option>
+          </select>
+        </div>
+        <canvas id="chart" width="900" height="360"></canvas>
+        <p class="muted small">棒：収支（回収−投資）</p>
+      </div>
+    </section>
+
+    <!-- 設定 -->
+    <section id="tab-settings" class="panel hidden">
+      <div class="card">
+        <h3>ロック</h3>
+        <div class="row space">
+          <div>
+            <div class="k">Face ID（パスキー）</div>
+            <div class="muted small">iPhoneで使えます（https公開が必要）</div>
+          </div>
+          <div class="row gap">
+            <button id="btnSetupPasskey" class="btn primary">設定</button>
+            <button id="btnDisablePasskey" class="btn">解除</button>
+          </div>
+        </div>
+
+        <div class="row space">
+          <div>
+            <div class="k">PINロック</div>
+            <div class="muted small">Face IDが使えない環境の保険</div>
+          </div>
+          <div class="row gap">
+            <button id="btnSetPIN" class="btn primary">PIN設定</button>
+            <button id="btnClearPIN" class="btn">PIN解除</button>
+          </div>
+        </div>
+
+        <div class="row space">
+          <div>
+            <div class="k">ロックを有効にする</div>
+            <div class="muted small">起動時にロック画面を表示</div>
+          </div>
+          <label class="switch">
+            <input id="toggleLock" type="checkbox" />
+            <span></span>
+          </label>
+        </div>
+
+        <p class="muted small">※ Face ID（パスキー）は「https」で開いているときだけ動きます。GitHub Pagesで公開するとOK。</p>
+      </div>
+
+      <div class="card">
+        <h3>データ</h3>
+        <div class="row gap">
+          <button id="btnBackup" class="btn">JSONバックアップ</button>
+          <label class="btn file">
+            JSON復元
+            <input id="fileRestore" type="file" accept="application/json" />
+          </label>
+          <button id="btnWipe" class="btn danger">全削除</button>
+        </div>
+        <p class="muted small">バックアップは安全のためおすすめです。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 追加/編集モーダル -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-body card">
+      <h2 id="modalTitle">追加</h2>
+      <div class="form">
+        <label>日付</label>
+        <input id="inpDate" class="input" type="date" />
+
+        <label>投資（円）</label>
+        <input id="inpInv" class="input" type="number" inputmode="numeric" placeholder="例：12000" />
+
+        <label>回収（円）</label>
+        <input id="inpPay" class="input" type="number" inputmode="numeric" placeholder="例：18000" />
+
+        <label>メモ（任意）</label>
+        <input id="inpMemo" class="input" type="text" placeholder="例：朝イチ、設定良さそう等" />
+
+        <div class="row space">
+          <div class="muted">収支：<span id="profitPreview">0</span>円</div>
+          <div class="row gap">
+            <button id="btnCancel" class="btn">キャンセル</button>
+            <button id="btnSave" class="btn primary">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -65,16 +65,15 @@
       </div>
 
       <div class="card">
-        <div class="row space">
-          <h3>月別収支グラフ</h3>
-          <select id="chartMode" class="select">
-            <option value="month">月別</option>
-            <option value="year">年別</option>
-          </select>
-        </div>
-        <canvas id="chart" width="900" height="360"></canvas>
-        <p class="muted small">棒：収支（回収−投資）</p>
-      </div>
+  <h3>今月の集計</h3>
+  <div id="currentMonthBox" class="month-box"></div>
+</div>
+
+<div class="card">
+  <h3>過去の月</h3>
+  <div id="pastMonthsBox" class="months-list"></div>
+</div>
+
     </section>
 
     <!-- 設定 -->
@@ -163,3 +162,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

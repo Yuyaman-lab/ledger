@@ -252,7 +252,7 @@ function escapeHtml(str){
 // ======================
 // 追加/編集モーダル
 // ======================
-function openModal(entry=null){
+function openModal(entry = null) {
   editingId = entry?.id ?? null;
   $("modalTitle").textContent = editingId ? "編集" : "追加";
   $("inpDate").value = entry?.date ?? toISODate(new Date());
@@ -260,10 +260,18 @@ function openModal(entry=null){
   $("inpPay").value = entry?.payout ?? "";
   $("inpMemo").value = entry?.memo ?? "";
   updateProfitPreview();
+
+  document.body.classList.add("modal-open");
   $("modal").classList.remove("hidden");
+
+  // iOS対策：最初の入力にフォーカス
+  setTimeout(() => {
+    $("inpInv").focus();
+  }, 300);
 }
 
-function closeModal(){
+function closeModal() {
+  document.body.classList.remove("modal-open");
   $("modal").classList.add("hidden");
 }
 
@@ -593,3 +601,4 @@ async function main(){
   }
 }
 main();
+

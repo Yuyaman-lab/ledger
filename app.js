@@ -312,6 +312,7 @@ async function saveModal(){
 // 集計/グラフ
 // ======================
 function renderSummary(){
+  // 全体統計（上の4カード）
   const totalProfit = entries.reduce((a,e)=>a+profitOf(e),0);
   const wins = entries.filter(e=>profitOf(e)>0).length;
   const total = entries.length;
@@ -325,8 +326,84 @@ function renderSummary(){
   $("statAvgInv").textContent = fmtYen(avgInv);
   $("statAvgPay").textContent = fmtYen(avgPay);
 
-  drawChart();
+  // 月別まとめ
+  const monthMap = new Map();
+  for(const e of entries){
+    const key = ym(e.date); // "YYYY-MM"
+    const cur = monthMap.get(key) || { investment:0, payout:0, profit:0, count:0, wins:0 };
+    cur.investment += Number(e.investment||0);
+    cur.payout += Number(e.payout||0);
+    const p = profitOf(e);
+    cur.profit += p;
+    cur.count += 1;
+    if(p > 0) cur.wins += 1;
+    monthMap.set(key, cur);
+  }
+
+  // 月を新しい順（降順）に並べる
+  const months = [...monthMap.keys()].sort((a,b)=> b.localeCompare(a));
+
+  // 今月キー
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+
+  // 今月→先頭表示
+  const curBox = $("currentMonthBox");
+  const pastBox = $("pastMonthsBox");
+  if(!curBox || !pastBox) return;
+
+  curBox.innerHTML = "";
+  pastBox.innerHTML = "";
+
+  if(months.length === 0){
+    curBox.innerHTML = `<div class="muted">データがありません。</div>`;
+    return;
+  }
+
+  // 今月データ
+  const curData = monthMap.get(currentKey);
+  if(curData){
+    curBox.appendChild(buildMonthRow(currentKey, curData, true));
+  }else{
+    curBox.innerHTML = `<div class="muted">今月のデータはまだありません。</div>`;
+  }
+
+  // 過去月：今月以外を降順で
+  const pastMonths = months.filter(m => m !== currentKey);
+  if(pastMonths.length === 0){
+    pastBox.innerHTML = `<div class="muted">過去月データはまだありません。</div>`;
+  }else{
+    for(const m of pastMonths){
+      pastBox.appendChild(buildMonthRow(m, monthMap.get(m), false));
+    }
+  }
 }
+
+function buildMonthRow(monthKey, data, highlight){
+  const p = data.profit;
+  const winRate = data.count ? (data.wins / data.count * 100) : 0;
+
+  const row = document.createElement("div");
+  row.className = "month-row";
+
+  row.innerHTML = `
+    <div>
+      <div class="title">${monthKey.replace("-", "/")}</div>
+      <div class="sub">
+        投資 ${fmtYen(data.investment)} / 回収 ${fmtYen(data.payout)}<br>
+        回数 ${data.count} / 勝率 ${winRate.toFixed(1)}%
+      </div>
+    </div>
+    <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
+  `;
+
+  if(highlight){
+    row.style.borderColor = "rgba(79,140,255,.45)";
+    row.style.background = "rgba(79,140,255,.08)";
+  }
+  return row;
+}
+
 
 function groupByMode(mode){
   const map = new Map();
@@ -517,8 +594,6 @@ function bindUI(){
   $("inpInv").oninput = updateProfitPreview;
   $("inpPay").oninput = updateProfitPreview;
 
-  $("chartMode").onchange = drawChart;
-
   // ロック
   $("btnUnlockPasskey").onclick = tryUnlockPasskey;
   $("btnUnlockPIN").onclick = ()=>{ openPINUI(); $("lockMsg").textContent=""; };
@@ -601,4 +676,5 @@ async function main(){
   }
 }
 main();
+
 

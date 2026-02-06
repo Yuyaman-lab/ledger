@@ -61,13 +61,18 @@ body{
 .space{justify-content:space-between}
 .gap{gap:10px}
 .form{display:grid;gap:10px}
-.input,.select{
-  width:100%;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.18);
-  color:var(--text);
+.input,
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+
+  /* iOS Safari 対策 */
+  font-size: 16px;
+  line-height: 1.4;
 }
 .filters{display:flex;gap:10px;margin-bottom:10px}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -129,3 +134,9 @@ label{font-size:13px;color:var(--muted)}
 
 .btn.file{position:relative;overflow:hidden}
 .btn.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+body.modal-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+

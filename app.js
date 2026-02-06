@@ -656,6 +656,11 @@ function bindUI(){
   };
 }
 
+// iOS Safari ピンチズーム抑止
+document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
+
 async function main(){
   await openDB();
   bindUI();
@@ -676,5 +681,6 @@ async function main(){
   }
 }
 main();
+
 
 

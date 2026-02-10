@@ -45,36 +45,46 @@
     </nav>
 
     <!-- 明細 -->
-    <section id="tab-ledger" class="panel">
-      <div class="filters">
-        <select id="filterYear" class="select"></select>
-        <select id="filterMonth" class="select"></select>
-        <button id="btnClearFilter" class="btn">フィルタ解除</button>
-      </div>
-      <ul id="entryList" class="list"></ul>
-      <div id="emptyState" class="empty muted hidden">まだデータがありません。「＋追加」から入力してください。</div>
-    </section>
+  <section id="tab-ledger" class="panel">
+  <div class="panel-fixed">
+    <div class="filters">
+      <select id="filterYear" class="select"></select>
+      <select id="filterMonth" class="select"></select>
+      <button id="btnClearFilter" class="btn">フィルタ解除</button>
+    </div>
+  </div>
+
+  <div class="panel-scroll">
+    <ul id="entryList" class="list"></ul>
+    <div id="emptyState" class="empty muted hidden">まだデータがありません。「＋追加」から入力してください。</div>
+  </div>
+</section>
+
 
     <!-- 集計 -->
     <section id="tab-summary" class="panel hidden">
-      <div class="grid">
-        <div class="stat card"><div class="k">総収支</div><div id="statTotal" class="v"></div></div>
-        <div class="stat card"><div class="k">勝率</div><div id="statWinRate" class="v"></div></div>
-        <div class="stat card"><div class="k">平均投資</div><div id="statAvgInv" class="v"></div></div>
-        <div class="stat card"><div class="k">平均回収</div><div id="statAvgPay" class="v"></div></div>
-      </div>
+  <div class="panel-fixed">
+    <div class="grid">
+      <div class="stat card"><div class="k">総収支</div><div id="statTotal" class="v"></div></div>
+      <div class="stat card"><div class="k">勝率</div><div id="statWinRate" class="v"></div></div>
+      <div class="stat card"><div class="k">平均投資</div><div id="statAvgInv" class="v"></div></div>
+      <div class="stat card"><div class="k">平均回収</div><div id="statAvgPay" class="v"></div></div>
+    </div>
 
-      <div class="card">
-  <h3>今月の集計</h3>
-  <div id="currentMonthBox" class="month-box"></div>
-</div>
+    <div class="card">
+      <h3>今月の集計（タップで明細へ）</h3>
+      <div id="currentMonthBox" class="month-box"></div>
+    </div>
+  </div>
 
-<div class="card">
-  <h3>過去の月</h3>
-  <div id="pastMonthsBox" class="months-list"></div>
-</div>
+  <div class="panel-scroll">
+    <div class="card">
+      <h3>過去の月</h3>
+      <div id="pastMonthsBox" class="months-list"></div>
+    </div>
+  </div>
+</section>
 
-    </section>
 
     <!-- 設定 -->
     <section id="tab-settings" class="panel hidden">
@@ -162,5 +172,6 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
 

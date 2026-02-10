@@ -186,8 +186,19 @@ function setTabs(){
 // 描画：明細
 // ======================
 function renderFilters(){
-  const years = [...new Set(entries.map(e=>year(e.date)))].sort().reverse();
-  const months = [...new Set(entries.map(e=>ym(e.date)))].sort().reverse();
+  const now = new Date();
+  const currentYear = String(now.getFullYear());
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+
+  // entries由来 + 今月を必ず候補に入れる（データ0件でも選べるように）
+  const yearsSet = new Set(entries.map(e => year(e.date)));
+  yearsSet.add(currentYear);
+
+  const monthsSet = new Set(entries.map(e => ym(e.date)));
+  monthsSet.add(currentMonth);
+
+  const years = [...yearsSet].sort().reverse();
+  const months = [...monthsSet].sort().reverse();
 
   const fy = $("filterYear");
   const fm = $("filterMonth");
@@ -195,13 +206,22 @@ function renderFilters(){
   fy.innerHTML = `<option value="all">全ての年</option>` + years.map(y=>`<option value="${y}">${y}年</option>`).join("");
   fm.innerHTML = `<option value="all">全ての月</option>` + months.map(m=>`<option value="${m}">${m}</option>`).join("");
 
+  // 現在のfilter値が選択肢に無い場合はallへ逃がす
+  if(filterY !== "all" && !yearsSet.has(filterY)) filterY = "all";
+  if(filterM !== "all" && !monthsSet.has(filterM)) filterM = "all";
+
   fy.value = filterY;
   fm.value = filterM;
 
   fy.onchange = ()=>{ filterY = fy.value; renderLedger(); };
   fm.onchange = ()=>{ filterM = fm.value; renderLedger(); };
 
-  $("btnClearFilter").onclick = ()=>{ filterY="all"; filterM="all"; renderFilters(); renderLedger(); };
+  $("btnClearFilter").onclick = ()=>{
+    filterY = "all";
+    filterM = "all";
+    renderFilters();
+    renderLedger();
+  };
 }
 
 function renderLedger(){
@@ -710,6 +730,19 @@ async function main(){
   await openDB();
   bindUI();
   await loadAndRender();
+    // 起動時：今日の年・月をデフォルトにする
+  const now = new Date();
+  filterY = String(now.getFullYear());
+  filterM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+
+  renderFilters();
+  renderLedger();
+
+  // ファーストビューを明細にする（今の仕様を維持）
+  if (typeof switchToTab === "function") {
+    switchToTab("ledger");
+  }
+
   // 初期表示は集計タブ（今月の集計をファーストビューに）
 switchToTab("summary");
 
@@ -728,6 +761,7 @@ switchToTab("summary");
   }
 }
 main();
+
 
 
 

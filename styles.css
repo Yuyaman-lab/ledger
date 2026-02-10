@@ -159,3 +159,48 @@ html, body {
   touch-action: manipulation;
 }
 
+/* 画面全体を固定して、タブ内だけスクロールさせる */
+html, body {
+  height: 100%;
+}
+
+/* 画面の高さを基準にする（iPhoneのアドレスバー変動に強い） */
+.container {
+  min-height: calc(100dvh - 70px); /* topbar分（だいたい） */
+}
+
+/* panel内を「固定＋スクロール」に分割 */
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 150px); /* topbar + tabs ざっくり分 */
+}
+
+/* 上側固定エリア */
+.panel-fixed {
+  flex: 0 0 auto;
+}
+
+/* 下側スクロールエリア */
+.panel-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 月行（前回の見た目が無い場合のため） */
+.month-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  margin-top:10px;
+}
+.month-row .title{font-weight:700}
+.month-row .sub{color:var(--muted);font-size:12px;margin-top:4px}
+.month-row .profit{font-weight:800;font-size:18px;text-align:right}
+

@@ -326,6 +326,16 @@ function renderSummary(){
   $("statAvgInv").textContent = fmtYen(avgInv);
   $("statAvgPay").textContent = fmtYen(avgPay);
 
+  function switchToTab(tab){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
+
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
+  document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
+
+  if(tab==="summary") renderSummary();
+}
+
   // 月別まとめ
   const monthMap = new Map();
   for(const e of entries){
@@ -396,6 +406,41 @@ function buildMonthRow(monthKey, data, highlight){
     </div>
     <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
   `;
+
+  if(highlight){
+    row.style.borderColor = "rgba(79,140,255,.45)";
+    row.style.background = "rgba(79,140,255,.08)";
+  }
+  return row;
+}
+
+function buildMonthRow(monthKey, data, highlight){
+  const p = data.profit;
+  const winRate = data.count ? (data.wins / data.count * 100) : 0;
+
+  const row = document.createElement("div");
+  row.className = "month-row";
+  row.style.cursor = "pointer"; // 追加
+
+  row.innerHTML = `
+    <div>
+      <div class="title">${monthKey.replace("-", "/")}</div>
+      <div class="sub">
+        投資 ${fmtYen(data.investment)} / 回収 ${fmtYen(data.payout)}<br>
+        回数 ${data.count} / 勝率 ${winRate.toFixed(1)}%
+      </div>
+    </div>
+    <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
+  `;
+
+  // 追加：タップでその月の明細へ
+  row.onclick = () => {
+    filterY = monthKey.slice(0,4);
+    filterM = monthKey;          // "YYYY-MM"
+    renderFilters();             // セレクトに反映
+    renderLedger();              // 明細描画
+    switchToTab("ledger");       // 明細タブへ
+  };
 
   if(highlight){
     row.style.borderColor = "rgba(79,140,255,.45)";
@@ -665,6 +710,8 @@ async function main(){
   await openDB();
   bindUI();
   await loadAndRender();
+  // 初期表示は集計タブ（今月の集計をファーストビューに）
+switchToTab("summary");
 
   // 起動時ロック
   if(lockEnabled()){
@@ -681,6 +728,7 @@ async function main(){
   }
 }
 main();
+
 
 
 

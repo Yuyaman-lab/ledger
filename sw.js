@@ -11,3 +11,12 @@ self.addEventListener("fetch", (e) => {
   );
 });
 
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)))
+    )
+  );
+});
+
+

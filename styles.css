@@ -310,10 +310,18 @@ body{
   text-shadow: none !important;
 }
 
-/* DEBUG: 反映確認（確認できたら消してOK） */
-.topbar{
-  outline: 2px solid #ff4da6 !important;
+/* ===== FINAL OVERRIDE: NAVY × PASTEL MINIMAL ===== */
+body{ background: var(--bg) !important; }
+
+.card, .item, .month-row{
+  background: var(--card) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
 }
+
+.btn{ box-shadow: none !important; }
+.profit.plus, .profit.minus{ text-shadow: none !important; }
+
 
 
 

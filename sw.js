@@ -1,4 +1,4 @@
-const CACHE = "slot-ledger-v2";
+const CACHE = "slot-ledger-v3";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
@@ -18,5 +18,13 @@ self.addEventListener("activate", (e) => {
     )
   );
 });
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)))
+    )
+  );
+});
+
 
 

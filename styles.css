@@ -12,27 +12,29 @@
 }
 
 /* =========================
-   THEME : NAVY × PASTEL
+   THEME : NAVY × PASTEL (MINIMAL)
 ========================= */
 body.theme-navy-pastel{
-  --bg:#0E153A;
-  --panel:#141C4D;
-  --card:#1A2361;
+  --bg:#0F172A;        /* ベースネイビー */
+  --panel:#111B3A;
+  --card:#162046;
 
-  --text:#F4F6FF;
-  --muted:#B6BCE6;
+  --text:#F5F7FF;
+  --muted:#B8C0E6;
 
-  --primary:#8FB5FF;   /* パステルブルー */
-  --ok:#7FE3C1;        /* ミント */
-  --ng:#FF9FB5;        /* パステルピンク */
-  --danger:#FF7A9A;
+  --primary:#8FAAFF;   /* 控えめパステル */
+  --ok:#8AD9C5;        /* ミント（淡） */
+  --ng:#F2A2B8;        /* ピンク（淡） */
+  --danger:#F28BA3;
 
-  --border:rgba(255,255,255,.10);
+  --border:rgba(255,255,255,.08);
 
-  --shadow:0 12px 28px rgba(14,21,58,.45);
-  --shadow-soft:0 8px 20px rgba(14,21,58,.35);
-  --radius:16px;
-  --radius-btn:14px;
+  /* 影は最小限 */
+  --shadow:none;
+  --shadow-soft:0 4px 10px rgba(0,0,0,.25);
+
+  --radius:14px;
+  --radius-btn:12px;
 }
 
 *{box-sizing:border-box}
@@ -232,48 +234,51 @@ html, body {
 /* ===== NAVY × PASTEL UI ===== */
 
 body{
-  background:
-    radial-gradient(900px 500px at 0% 0%, rgba(143,181,255,.18), transparent 60%),
-    radial-gradient(700px 400px at 100% 10%, rgba(255,159,181,.15), transparent 55%),
-    linear-gradient(180deg, var(--bg), #0B1030);
+  background: var(--bg);
 }
 
 /* カード */
-.card, .item, .month-row{
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--card) 92%, #fff 8%),
-    var(--card)
-  );
-  box-shadow: var(--shadow-soft);
+.card,
+.item,
+.month-row{
+  background: var(--card);
   border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 /* プラス・マイナス収支 */
 .profit.plus{
   color:var(--ok);
-  text-shadow:0 0 8px rgba(127,227,193,.35);
+  text-shadow:none;
 }
+
 .profit.minus{
   color:var(--ng);
-  text-shadow:0 0 8px rgba(255,159,181,.35);
+  text-shadow:none;
 }
 
 /* メインボタン */
+.btn{
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
 .btn.primary{
-  background: linear-gradient(
-    135deg,
-    #9BBEFF,
-    #7FA8FF
-  );
-  border:none;
-  box-shadow:0 10px 22px rgba(143,181,255,.35);
+  background: rgba(143,170,255,.18);
+  border-color: rgba(143,170,255,.35);
 }
 
 /* タブ */
+.tab{
+  box-shadow:none;
+  background: rgba(255,255,255,.03);
+}
+
 .tab.active{
-  background: rgba(143,181,255,.22);
-  box-shadow:0 6px 18px rgba(143,181,255,.25);
+  background: rgba(143,170,255,.20);
+  border-color: rgba(143,170,255,.35);
 }
 
 /* トップバー */
@@ -285,5 +290,6 @@ body{
   );
   backdrop-filter: blur(10px);
 }
+
 
 

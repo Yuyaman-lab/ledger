@@ -1,0 +1,326 @@
+:root{
+  --bg:#0b1220;
+  --panel:#121b2f;
+  --card:#0f172a;
+  --text:#e7eefc;
+  --muted:#9fb0d0;
+  --primary:#4f8cff;
+  --danger:#ff4f6d;
+  --ok:#28d17c;
+  --ng:#ff6161;
+  --border:rgba(255,255,255,.08);
+}
+
+/* =========================
+   THEME : NAVY × PASTEL (MINIMAL)
+========================= */
+body.theme-navy-pastel{
+  --bg:#0F172A;        /* ベースネイビー */
+  --panel:#111B3A;
+  --card:#162046;
+
+  --text:#F5F7FF;
+  --muted:#B8C0E6;
+
+  --primary:#8FAAFF;   /* 控えめパステル */
+  --ok:#8AD9C5;        /* ミント（淡） */
+  --ng:#F2A2B8;        /* ピンク（淡） */
+  --danger:#F28BA3;
+
+  --border:rgba(255,255,255,.08);
+
+  /* 影は最小限 */
+  --shadow:none;
+  --shadow-soft:0 4px 10px rgba(0,0,0,.25);
+
+  --radius:14px;
+  --radius-btn:12px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP", sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg, var(--bg), #070b14);
+}
+.topbar{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 14px;
+  background:rgba(11,18,32,.85);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar h1{margin:0;font-size:18px}
+.top-actions{display:flex;gap:10px}
+.container{max-width:980px;margin:0 auto;padding:14px}
+.tabs{display:flex;gap:10px;margin-bottom:12px}
+.tab{
+  flex:1;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  border-radius:12px;
+}
+.tab.active{background:rgba(79,140,255,.18);border-color:rgba(79,140,255,.35)}
+.panel{min-height:50vh}
+.hidden{display:none !important}
+.card{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+}
+.btn{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+}
+.btn.primary{background:rgba(79,140,255,.25);border-color:rgba(79,140,255,.35)}
+.btn.danger{background:rgba(255,79,109,.16);border-color:rgba(255,79,109,.32)}
+.btn:active{transform:scale(.99)}
+.row{display:flex;align-items:center}
+.space{justify-content:space-between}
+.gap{gap:10px}
+.form{display:grid;gap:10px}
+.input,
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+
+  /* iOS Safari 対策 */
+  font-size: 16px;
+  line-height: 1.4;
+}
+.filters{display:flex;gap:10px;margin-bottom:10px}
+.list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.item{
+  display:flex;justify-content:space-between;gap:12px;
+  padding:12px;border:1px solid var(--border);
+  border-radius:14px;background:rgba(255,255,255,.03);
+}
+.item .left{display:grid;gap:4px}
+.badge{
+  display:inline-block;
+  padding:4px 10px;border-radius:999px;
+  border:1px solid var(--border);
+  font-size:12px;color:var(--muted);
+}
+.profit{font-weight:700;font-size:18px}
+.profit.plus{color:var(--ok)}
+.profit.minus{color:var(--ng)}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.empty{padding:14px}
+
+.modal{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,.55);
+  display:flex;align-items:center;justify-content:center;
+  padding:14px;
+}
+.modal-body{width:min(520px,100%)}
+
+.lock{
+  position:fixed;inset:0;z-index:99;
+  display:flex;align-items:center;justify-content:center;
+  padding:14px;
+  background:rgba(0,0,0,.55);
+}
+.msg{margin-top:8px;color:var(--muted)}
+label{font-size:13px;color:var(--muted)}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}
+.stat .k{color:var(--muted);font-size:12px}
+.stat .v{font-size:22px;font-weight:800;margin-top:4px}
+
+.switch{position:relative;display:inline-block;width:56px;height:32px}
+.switch input{display:none}
+.switch span{
+  position:absolute;cursor:pointer;inset:0;
+  background:rgba(255,255,255,.12);
+  border:1px solid var(--border);
+  border-radius:999px;
+}
+.switch span:before{
+  content:"";
+  position:absolute;height:24px;width:24px;left:4px;top:3px;
+  background:#fff;border-radius:50%;
+  transition:.2s;
+}
+.switch input:checked + span{background:rgba(79,140,255,.35);border-color:rgba(79,140,255,.5)}
+.switch input:checked + span:before{transform:translateX(24px)}
+
+.btn.file{position:relative;overflow:hidden}
+.btn.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+body.modal-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+.month-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  margin-top:10px;
+}
+.month-row .title{font-weight:700}
+.month-row .sub{color:var(--muted);font-size:12px;margin-top:4px}
+.month-row .profit{font-weight:800;font-size:18px;text-align:right}
+.months-list .month-row{margin-top:10px}
+
+html, body {
+  touch-action: manipulation;
+}
+
+/* 画面全体を固定して、タブ内だけスクロールさせる */
+html, body {
+  height: 100%;
+}
+
+/* 画面の高さを基準にする（iPhoneのアドレスバー変動に強い） */
+.container {
+  min-height: calc(100dvh - 70px); /* topbar分（だいたい） */
+}
+
+/* panel内を「固定＋スクロール」に分割 */
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 150px); /* topbar + tabs ざっくり分 */
+}
+
+/* 上側固定エリア */
+.panel-fixed {
+  flex: 0 0 auto;
+}
+
+/* 下側スクロールエリア */
+.panel-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 月行（前回の見た目が無い場合のため） */
+.month-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  margin-top:10px;
+}
+.month-row .title{font-weight:700}
+.month-row .sub{color:var(--muted);font-size:12px;margin-top:4px}
+.month-row .profit{font-weight:800;font-size:18px;text-align:right}
+
+/* ===== NAVY × PASTEL UI ===== */
+
+body{
+  background: var(--bg);
+}
+
+/* カード */
+.card,
+.item,
+.month-row{
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+/* プラス・マイナス収支 */
+.profit.plus{
+  color:var(--ok);
+  text-shadow:none;
+}
+
+.profit.minus{
+  color:var(--ng);
+  text-shadow:none;
+}
+
+/* メインボタン */
+.btn{
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.btn.primary{
+  background: rgba(143,170,255,.18);
+  border-color: rgba(143,170,255,.35);
+}
+
+/* タブ */
+.tab{
+  box-shadow:none;
+  background: rgba(255,255,255,.03);
+}
+
+.tab.active{
+  background: rgba(143,170,255,.20);
+  border-color: rgba(143,170,255,.35);
+}
+
+/* トップバー */
+.topbar{
+  background: linear-gradient(
+    180deg,
+    rgba(20,28,77,.95),
+    rgba(20,28,77,.85)
+  );
+  backdrop-filter: blur(10px);
+}
+
+/* ===== FINAL OVERRIDE (NAVY × PASTEL MINIMAL) ===== */
+body{
+  background: var(--bg) !important;
+}
+
+.card, .item, .month-row{
+  background: var(--card) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn{
+  box-shadow: none !important;
+}
+
+.profit.plus, .profit.minus{
+  text-shadow: none !important;
+}
+
+/* ===== FINAL OVERRIDE: NAVY × PASTEL MINIMAL ===== */
+body{ background: var(--bg) !important; }
+
+.card, .item, .month-row{
+  background: var(--card) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn{ box-shadow: none !important; }
+.profit.plus, .profit.minus{ text-shadow: none !important; }
+
+
+

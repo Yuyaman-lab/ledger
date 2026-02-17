@@ -322,5 +322,24 @@ body{ background: var(--bg) !important; }
 .btn{ box-shadow: none !important; }
 .profit.plus, .profit.minus{ text-shadow: none !important; }
 
+/* --- iOS PWA ネオン殺し --- */
+@media (display-mode: standalone) {
+
+  .card,
+  .list-item,
+  .summary-card,
+  .month-card {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .delete-btn {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+}
+
 
 

@@ -340,6 +340,18 @@ body{ background: var(--bg) !important; }
   }
 
 }
+/* ===== 強制ネオン除去 ===== */
+
+* {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+button, .delete-btn, .card, .list-item, .summary-card, .month-card {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
 
 
 

@@ -352,6 +352,12 @@ button, .delete-btn, .card, .list-item, .summary-card, .month-card {
   box-shadow: none !important;
   outline: none !important;
 }
+:root {
+  accent-color: #1e3a5f;
+}
+button, input, select {
+  accent-color: #1e3a5f;
+}
 
 
 

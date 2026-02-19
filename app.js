@@ -331,6 +331,16 @@ async function saveModal(){
 // ======================
 // 集計/グラフ
 // ======================
+function switchToTab(tab){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
+
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
+  document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
+
+  if(tab==="summary") renderSummary();
+}
+
 function renderSummary(){
   // 全体統計（上の4カード）
   const totalProfit = entries.reduce((a,e)=>a+profitOf(e),0);
@@ -346,15 +356,6 @@ function renderSummary(){
   $("statAvgInv").textContent = fmtYen(avgInv);
   $("statAvgPay").textContent = fmtYen(avgPay);
 
-  function switchToTab(tab){
-  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-
-  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
-  document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
-
-  if(tab==="summary") renderSummary();
-}
 
   // 月別まとめ
   const monthMap = new Map();
@@ -398,13 +399,6 @@ function renderSummary(){
     curBox.innerHTML = `<div class="muted">今月のデータはまだありません。</div>`;
   }
 
-  box.onclick = () => {
-  filterY = monthKey.slice(0,4);
-  filterM = monthKey;
-  renderFilters();
-  renderLedger();
-  switchToTab("ledger");
-};
 
   // 過去月：今月以外を降順で
   const pastMonths = months.filter(m => m !== currentKey);

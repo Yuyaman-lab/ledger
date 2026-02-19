@@ -398,6 +398,14 @@ function renderSummary(){
     curBox.innerHTML = `<div class="muted">今月のデータはまだありません。</div>`;
   }
 
+  box.onclick = () => {
+  filterY = monthKey.slice(0,4);
+  filterM = monthKey;
+  renderFilters();
+  renderLedger();
+  switchToTab("ledger");
+};
+
   // 過去月：今月以外を降順で
   const pastMonths = months.filter(m => m !== currentKey);
   if(pastMonths.length === 0){

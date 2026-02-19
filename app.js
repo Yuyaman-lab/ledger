@@ -454,6 +454,8 @@ function buildMonthRow(monthKey, data, highlight){
   `;
 
   // 追加：タップでその月の明細へ
+  card.onclick = () => goToMonthDetail(month);
+
   row.onclick = () => {
     filterY = monthKey.slice(0,4);
     filterM = monthKey;          // "YYYY-MM"

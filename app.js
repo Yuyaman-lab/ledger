@@ -468,6 +468,14 @@ function buildMonthRow(monthKey, data, highlight){
   }
   return row;
 }
+function goToMonthDetail(month){
+  document.querySelector('[data-tab="detail"]').click();
+
+  setTimeout(()=>{
+    document.getElementById("monthFilter").value = month;
+    renderEntries();
+  },200);
+}
 
 
 function groupByMode(mode){

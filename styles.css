@@ -341,17 +341,6 @@ body{ background: var(--bg) !important; }
 
 }
 /* ===== 強制ネオン除去 ===== */
-
-* {
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-button, .delete-btn, .card, .list-item, .summary-card, .month-card {
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
 :root {
   accent-color: #1e3a5f;
 }
@@ -422,11 +411,14 @@ button, input, select {
 }
 
 .year-graph .bars{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns: repeat(12,1fr);
+  align-items:end;
   height:120px;
-  position:relative;
+  gap:6px;
+}
+.year-graph .bar{
+  width:100%;
 }
 
 .year-graph .bar{
@@ -465,6 +457,22 @@ button, input, select {
   -webkit-backdrop-filter: blur(14px);
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.05),
+    0 10px 30px rgba(0,0,0,0.4);
+}
+
+.month-card{
+  padding:16px;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.02)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.12);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.05),
     0 10px 30px rgba(0,0,0,0.4);

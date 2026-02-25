@@ -779,11 +779,11 @@ function renderYearGraph(){
   let total = 0;
   let count = 0;
 
-  entries.forEach(e=>{
+  ledger.forEach(e=>{
     const d = new Date(e.date);
     if(d.getFullYear() === year){
       const m = d.getMonth();
-      const diff = (e.return || 0) - (e.invest || 0);
+      const diff = (e.out || 0) - (e.in || 0);
       monthly[m] += diff;
     }
   });

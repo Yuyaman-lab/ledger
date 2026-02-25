@@ -59,9 +59,11 @@
       </div>
     </section>
 
-    <!-- 集計 ★ここが修正箇所★ -->
+    <!-- 集計 -->
     <div id="tab-summary" class="panel">
       <div class="panel-scroll">
+
+        <!-- 統計カード 2×2 -->
         <div class="grid">
           <div class="stat card"><div class="k">総収支</div><div id="statTotal" class="v"></div></div>
           <div class="stat card"><div class="k">勝率</div><div id="statWinRate" class="v"></div></div>
@@ -69,21 +71,22 @@
           <div class="stat card"><div class="k">平均回収</div><div id="statAvgPay" class="v"></div></div>
         </div>
 
-        <!-- 年間グラフ -->
+        <!-- 年間収支グラフ（Canvas） -->
         <div class="year-graph card" id="yearGraph">
           <div class="year-graph-header">
             <div class="title">年間収支</div>
-            <div class="avg" id="yearAvg">年間平均収支：-</div>
           </div>
-          <div class="bars" id="yearBars"></div>
+          <!-- ▼▼▼ ここが変更点：divバーをCanvasに置き換え ▼▼▼ -->
+          <canvas id="yearCanvas"></canvas>
+          <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
         </div>
 
         <h3>今月の集計</h3>
         <div id="currentMonthBox" class="month-card card"></div>
 
         <h3 style="margin-top:16px;">過去月の集計</h3>
-        <!-- ★Bug修正: pastMonthsBox を追加 -->
         <div id="pastMonthsBox"></div>
+
       </div>
     </div>
 

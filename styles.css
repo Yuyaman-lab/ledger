@@ -15,24 +15,18 @@
    THEME : NAVY × PASTEL (MINIMAL)
 ========================= */
 body.theme-navy-pastel{
-  --bg:#0F172A;        /* ベースネイビー */
+  --bg:#0F172A;
   --panel:#111B3A;
   --card:#162046;
-
   --text:#F5F7FF;
   --muted:#B8C0E6;
-
-  --primary:#8FAAFF;   /* 控えめパステル */
-  --ok:#8AD9C5;        /* ミント（淡） */
-  --ng:#F2A2B8;        /* ピンク（淡） */
+  --primary:#8FAAFF;
+  --ok:#8AD9C5;
+  --ng:#F2A2B8;
   --danger:#F28BA3;
-
   --border:rgba(255,255,255,.08);
-
-  /* 影は最小限 */
   --shadow:none;
   --shadow-soft:0 4px 10px rgba(0,0,0,.25);
-
   --radius:14px;
   --radius-btn:12px;
 }
@@ -96,8 +90,6 @@ body{
   border: 1px solid var(--border);
   background: rgba(0,0,0,.18);
   color: var(--text);
-
-  /* iOS Safari 対策 */
   font-size: 16px;
   line-height: 1.4;
 }
@@ -167,6 +159,7 @@ body.modal-open {
   overflow: hidden;
 }
 
+/* 月行（旧 month-row スタイル。過去月リストで使用） */
 .month-row{
   display:flex;
   justify-content:space-between;
@@ -180,35 +173,26 @@ body.modal-open {
 .month-row .title{font-weight:700}
 .month-row .sub{color:var(--muted);font-size:12px;margin-top:4px}
 .month-row .profit{font-weight:800;font-size:18px;text-align:right}
-.months-list .month-row{margin-top:10px}
 
 html, body {
   touch-action: manipulation;
-}
-
-/* 画面全体を固定して、タブ内だけスクロールさせる */
-html, body {
   height: 100%;
 }
 
-/* 画面の高さを基準にする（iPhoneのアドレスバー変動に強い） */
 .container {
-  min-height: calc(100dvh - 70px); /* topbar分（だいたい） */
+  min-height: calc(100dvh - 70px);
 }
 
-/* panel内を「固定＋スクロール」に分割 */
 .panel {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 150px); /* topbar + tabs ざっくり分 */
+  height: calc(100dvh - 150px);
 }
 
-/* 上側固定エリア */
 .panel-fixed {
   flex: 0 0 auto;
 }
 
-/* 下側スクロールエリア */
 .panel-scroll {
   flex: 1 1 auto;
   overflow: auto;
@@ -216,181 +200,88 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* 月行（前回の見た目が無い場合のため） */
-.month-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:14px;
-  background:rgba(255,255,255,.03);
-  margin-top:10px;
-}
-.month-row .title{font-weight:700}
-.month-row .sub{color:var(--muted);font-size:12px;margin-top:4px}
-.month-row .profit{font-weight:800;font-size:18px;text-align:right}
-
 /* ===== NAVY × PASTEL UI ===== */
-
 body{
   background: var(--bg);
 }
 
-/* カード */
 .card,
 .item,
 .month-row{
   background: var(--card);
-  border-radius: var(--radius);
+  border-radius: 14px;
   border: 1px solid var(--border);
   box-shadow: none;
 }
 
-/* プラス・マイナス収支 */
-.profit.plus{
-  color:var(--ok);
-  text-shadow:none;
-}
+.profit.plus{ color:var(--ok); text-shadow:none; }
+.profit.minus{ color:var(--ng); text-shadow:none; }
 
-.profit.minus{
-  color:var(--ng);
-  text-shadow:none;
-}
-
-/* メインボタン */
 .btn{
   background: rgba(255,255,255,.04);
   border: 1px solid var(--border);
   box-shadow: none;
 }
-
 .btn.primary{
   background: rgba(143,170,255,.18);
   border-color: rgba(143,170,255,.35);
 }
 
-/* タブ */
-.tab{
-  box-shadow:none;
-  background: rgba(255,255,255,.03);
-}
+.tab{ box-shadow:none; background: rgba(255,255,255,.03); }
+.tab.active{ background: rgba(143,170,255,.20); border-color: rgba(143,170,255,.35); }
 
-.tab.active{
-  background: rgba(143,170,255,.20);
-  border-color: rgba(143,170,255,.35);
-}
-
-/* トップバー */
 .topbar{
-  background: linear-gradient(
-    180deg,
-    rgba(20,28,77,.95),
-    rgba(20,28,77,.85)
-  );
+  background: linear-gradient(180deg, rgba(20,28,77,.95), rgba(20,28,77,.85));
   backdrop-filter: blur(10px);
 }
 
-/* ===== FINAL OVERRIDE (NAVY × PASTEL MINIMAL) ===== */
-body{
-  background: var(--bg) !important;
-}
-
-.card, .item, .month-row{
-  background: var(--card) !important;
-  box-shadow: none !important;
-  border: 1px solid var(--border) !important;
-}
-
-.btn{
-  box-shadow: none !important;
-}
-
-.profit.plus, .profit.minus{
-  text-shadow: none !important;
-}
-
-/* ===== FINAL OVERRIDE: NAVY × PASTEL MINIMAL ===== */
+/* ===== FINAL OVERRIDE ===== */
 body{ background: var(--bg) !important; }
-
 .card, .item, .month-row{
   background: var(--card) !important;
   box-shadow: none !important;
   border: 1px solid var(--border) !important;
 }
-
 .btn{ box-shadow: none !important; }
 .profit.plus, .profit.minus{ text-shadow: none !important; }
 
-/* --- iOS PWA ネオン殺し --- */
+/* iOS PWA ネオン殺し */
 @media (display-mode: standalone) {
-
-  .card,
-  .list-item,
-  .summary-card,
-  .month-card {
+  .card, .list-item, .summary-card, .month-card {
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
   }
+  .delete-btn { border: none !important; box-shadow: none !important; }
+}
 
-  .delete-btn {
-    border: none !important;
-    box-shadow: none !important;
-  }
+:root { accent-color: #1e3a5f; }
+button, input, select { accent-color: #1e3a5f; }
 
-}
-/* ===== 強制ネオン除去 ===== */
-:root {
-  accent-color: #1e3a5f;
-}
-button, input, select {
-  accent-color: #1e3a5f;
-}
-/* ===== 収支表示の崩れ防止 ===== */
-.profit {
-  white-space: nowrap;
-}
+.profit { white-space: nowrap; }
 
 /* ===== 月カード ガラスUI ===== */
-
 .month-box,
 .months-list .month-card {
-
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.10),
-    rgba(255,255,255,0.03)
-  );
-
+  background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-
   border-radius: 18px;
-
-  border: none; /* ←これ重要 */
-
-  box-shadow:
-    0 8px 25px rgba(0,0,0,0.35); /* ←シンプルに */
-
+  border: none;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.35);
   transition: all .25s ease;
 }
 .month-box:hover,
 .months-list .month-card:hover {
   transform: translateY(-2px);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.08),
-    0 16px 40px rgba(0,0,0,0.5);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 16px 40px rgba(0,0,0,0.5);
 }
 
-.month-box .v,
-.months-list .v {
-  letter-spacing: 0.04em;
-  font-weight: 600;
-}
+/* ===== 年間グラフカード ===== */
 .year-graph{
-  margin-top:20px;
+  margin-top:0;
   padding:16px;
+  margin-bottom: 12px;
 }
 
 .year-graph-header{
@@ -402,85 +293,35 @@ button, input, select {
 
 .year-graph .title{
   font-size:14px;
-  opacity:0.8;
+  font-weight: 700;
+  opacity:0.9;
 }
 
-.year-graph .avg{
-  font-size:13px;
-  color:#8fffd1;
+/* ▼▼▼ Canvas スタイル（旧 .bars / .bar は削除済み） ▼▼▼ */
+#yearCanvas {
+  display: block;
+  width: 100%;
+  height: 190px;
+  border-radius: 8px;
 }
+/* ▲▲▲ Canvas スタイルここまで ▲▲▲ */
 
-.year-graph .bars{
-  display:grid;
-  grid-template-columns: repeat(12,1fr);
-  align-items:end;
-  height:120px;
-  gap:6px;
-}
-.year-graph .bar{
-  width:100%;
-}
-/* ★Bug修正: width:6% → width:100% (グリッド内でバーを正しく表示) */
-.year-graph .bar{
-  width:100%;
-  border-radius:6px;
-  background:linear-gradient(to top,#5fd0ff,#7bffb3);
-  opacity:0.8;
-}
-
-.year-graph .bar.minus{
-  background:linear-gradient(to top,#ff6b6b,#ff9a9a);
-
-}
 .year-graph.card{
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.08),
-    rgba(255,255,255,0.02)
-  );
+  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.12);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.05),
-    0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.4);
 }
 
-.month-card{
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.08),
-    rgba(255,255,255,0.02)
-  );
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.05),
-    0 10px 30px rgba(0,0,0,0.4);
-}
-
+/* ===== 今月の集計カード ===== */
 .month-card{
   padding:16px;
-  background: linear-gradient(
-    145deg,
-    rgba(255,255,255,0.08),
-    rgba(255,255,255,0.02)
-  );
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,0.12);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.05),
-    0 10px 30px rgba(0,0,0,0.4);
-}
-.month-card{
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius:20px;
   border:1px solid rgba(255,255,255,0.08);
-  padding:20px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.4);
 }

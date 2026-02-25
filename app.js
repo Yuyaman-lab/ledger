@@ -113,7 +113,6 @@ function hasPIN(){
 }
 
 // Passkey（WebAuthn）
-// NOTE: httpsでのみ動作。GitHub PagesでOK
 async function setupPasskey(){
   if(!window.PublicKeyCredential) throw new Error("このブラウザはパスキー非対応です。");
   const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -177,7 +176,11 @@ function setTabs(){
       ["ledger","summary","settings"].forEach(t=>{
         $(`tab-${t}`).classList.toggle("hidden", t !== tab);
       });
-      if(tab==="summary") renderSummary();
+      if(tab==="summary"){
+        renderSummary();
+        // タブが表示された後にCanvasを描画（サイズが確定してから）
+        requestAnimationFrame(() => renderYearGraph());
+      }
     };
   });
 }
@@ -190,7 +193,6 @@ function renderFilters(){
   const currentYear = String(now.getFullYear());
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
 
-  // entries由来 + 今月を必ず候補に入れる（データ0件でも選べるように）
   const yearsSet = new Set(entries.map(e => year(e.date)));
   yearsSet.add(currentYear);
 
@@ -206,7 +208,6 @@ function renderFilters(){
   fy.innerHTML = `<option value="all">全ての年</option>` + years.map(y=>`<option value="${y}">${y}年</option>`).join("");
   fm.innerHTML = `<option value="all">全ての月</option>` + months.map(m=>`<option value="${m}">${m}</option>`).join("");
 
-  // 現在のfilter値が選択肢に無い場合はallへ逃がす
   if(filterY !== "all" && !yearsSet.has(filterY)) filterY = "all";
   if(filterM !== "all" && !monthsSet.has(filterM)) filterM = "all";
 
@@ -284,10 +285,7 @@ function openModal(entry = null) {
   document.body.classList.add("modal-open");
   $("modal").classList.remove("hidden");
 
-  // iOS対策：最初の入力にフォーカス
-  setTimeout(() => {
-    $("inpInv").focus();
-  }, 300);
+  setTimeout(() => { $("inpInv").focus(); }, 300);
 }
 
 function closeModal() {
@@ -307,29 +305,17 @@ async function saveModal(){
   const payout = Number($("inpPay").value||0);
   const memo = $("inpMemo").value.trim();
 
-  if(!date){
-    alert("日付を選択してください");
-    return;
-  }
-  if(investment < 0 || payout < 0){
-    alert("投資/回収は0以上で入力してください");
-    return;
-  }
+  if(!date){ alert("日付を選択してください"); return; }
+  if(investment < 0 || payout < 0){ alert("投資/回収は0以上で入力してください"); return; }
 
-  const entry = {
-    id: editingId ?? uid(),
-    date,
-    investment,
-    payout,
-    memo
-  };
+  const entry = { id: editingId ?? uid(), date, investment, payout, memo };
   await putEntry(entry);
   closeModal();
   await loadAndRender();
 }
 
 // ======================
-// 集計/グラフ
+// 集計
 // ======================
 function switchToTab(tab){
   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
@@ -338,16 +324,17 @@ function switchToTab(tab){
   document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
   document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
 
-  if(tab==="summary") renderSummary();
+  if(tab==="summary"){
+    renderSummary();
+    requestAnimationFrame(() => renderYearGraph());
+  }
 }
 
 function renderSummary(){
-  // 全体統計（上の4カード）
   const totalProfit = entries.reduce((a,e)=>a+profitOf(e),0);
   const wins = entries.filter(e=>profitOf(e)>0).length;
   const total = entries.length;
   const winRate = total ? (wins/total*100) : 0;
-
   const avgInv = total ? Math.round(entries.reduce((a,e)=>a+Number(e.investment||0),0)/total) : 0;
   const avgPay = total ? Math.round(entries.reduce((a,e)=>a+Number(e.payout||0),0)/total) : 0;
 
@@ -356,11 +343,9 @@ function renderSummary(){
   $("statAvgInv").textContent = fmtYen(avgInv);
   $("statAvgPay").textContent = fmtYen(avgPay);
 
-
-  // 月別まとめ
   const monthMap = new Map();
   for(const e of entries){
-    const key = ym(e.date); // "YYYY-MM"
+    const key = ym(e.date);
     const cur = monthMap.get(key) || { investment:0, payout:0, profit:0, count:0, wins:0 };
     cur.investment += Number(e.investment||0);
     cur.payout += Number(e.payout||0);
@@ -371,14 +356,11 @@ function renderSummary(){
     monthMap.set(key, cur);
   }
 
-  // 月を新しい順（降順）に並べる
   const months = [...monthMap.keys()].sort((a,b)=> b.localeCompare(a));
 
-  // 今月キー
   const now = new Date();
   const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
 
-  // 今月→先頭表示
   const curBox = $("currentMonthBox");
   const pastBox = $("pastMonthsBox");
   if(!curBox || !pastBox) return;
@@ -391,7 +373,6 @@ function renderSummary(){
     return;
   }
 
-  // 今月データ
   const curData = monthMap.get(currentKey);
   if(curData){
     curBox.appendChild(buildMonthRow(currentKey, curData, true));
@@ -399,8 +380,6 @@ function renderSummary(){
     curBox.innerHTML = `<div class="muted">今月のデータはまだありません。</div>`;
   }
 
-
-  // 過去月：今月以外を降順で
   const pastMonths = months.filter(m => m !== currentKey);
   if(pastMonths.length === 0){
     pastBox.innerHTML = `<div class="muted">過去月データはまだありません。</div>`;
@@ -409,6 +388,8 @@ function renderSummary(){
       pastBox.appendChild(buildMonthRow(m, monthMap.get(m), false));
     }
   }
+
+  // グラフ描画（集計タブが表示状態なら即描画）
   renderYearGraph();
 }
 
@@ -418,6 +399,7 @@ function buildMonthRow(monthKey, data, highlight){
 
   const row = document.createElement("div");
   row.className = "month-row";
+  row.style.cursor = "pointer";
 
   row.innerHTML = `
     <div>
@@ -430,44 +412,15 @@ function buildMonthRow(monthKey, data, highlight){
     <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
   `;
 
-  if(highlight){
-    row.style.borderColor = "rgba(79,140,255,.45)";
-    row.style.background = "rgba(79,140,255,.08)";
-  }
-  return row;
-}
-
-function buildMonthRow(monthKey, data, highlight){
-  const p = data.profit;
-  const winRate = data.count ? (data.wins / data.count * 100) : 0;
-
-  const row = document.createElement("div");
-  row.className = "month-row";
-  row.style.cursor = "pointer"; // 追加
-
-  row.innerHTML = `
-    <div>
-      <div class="title">${monthKey.replace("-", "/")}</div>
-      <div class="sub">
-        投資 ${fmtYen(data.investment)} / 回収 ${fmtYen(data.payout)}<br>
-        回数 ${data.count} / 勝率 ${winRate.toFixed(1)}%
-      </div>
-    </div>
-    <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
-  `;
-
-  // ★Bug修正: switchToTab("summary") → 明細タブへ正しく遷移
   row.onclick = () => {
     filterY = monthKey.slice(0,4);
     filterM = monthKey;
-    // タブボタンを直接クリックして正しく画面切替
     const ledgerTabBtn = document.querySelector('.tab[data-tab="ledger"]');
     if(ledgerTabBtn) ledgerTabBtn.click();
     renderFilters();
     renderLedger();
   };
 
-
   if(highlight){
     row.style.borderColor = "rgba(79,140,255,.45)";
     row.style.background = "rgba(79,140,255,.08)";
@@ -475,77 +428,218 @@ function buildMonthRow(monthKey, data, highlight){
   return row;
 }
 
-function groupByMode(mode){
-  const map = new Map();
-  for(const e of entries){
-    const key = mode==="year" ? year(e.date) : ym(e.date);
-    map.set(key, (map.get(key)||0) + profitOf(e));
-  }
-  return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
-}
+// ======================
+// ▼▼▼ 年間収支グラフ（Canvas版）▼▼▼
+// ======================
+function renderYearGraph(){
+  const canvas = document.getElementById("yearCanvas");
+  if(!canvas) return;
 
-function drawChart(){
-  const mode = $("chartMode").value;
-  const data = groupByMode(mode);
-  const canvas = $("chart");
-  const ctx = canvas.getContext("2d");
+  // Canvas の実際の描画サイズを取得
+  const rect = canvas.getBoundingClientRect();
+  const cssW = rect.width;
+  const cssH = rect.height;
 
-  // 高DPI対策
+  // 非表示タブ or まだレイアウト未確定の場合はスキップ
+  if(cssW <= 0 || cssH <= 0) return;
+
   const dpr = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth || 900;
-  const cssH = canvas.clientHeight || 360;
-  canvas.width = Math.floor(cssW * dpr);
-  canvas.height = Math.floor(cssH * dpr);
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+
+  const ctx = canvas.getContext("2d");
   ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, cssW, cssH);
 
-  ctx.clearRect(0,0,cssW,cssH);
+  // ── データ収集 ──────────────────────────────
+  const now = new Date();
+  const currentYear  = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-based
 
-  // 背景
-  ctx.fillStyle = "rgba(255,255,255,0.02)";
-  ctx.fillRect(0,0,cssW,cssH);
+  const monthly = new Array(12).fill(0);
+  entries.forEach(e => {
+    const d = new Date(e.date);
+    if(d.getFullYear() === currentYear){
+      const m = d.getMonth();
+      monthly[m] += (Number(e.payout)||0) - (Number(e.investment)||0);
+    }
+  });
 
-  const padding = 36;
-  const w = cssW - padding*2;
-  const h = cssH - padding*2;
+  // 累積折れ線（現在月まで）
+  const cumulative = [];
+  let cum = 0;
+  for(let i = 0; i <= currentMonth; i++){
+    cum += monthly[i];
+    cumulative.push(cum);
+  }
 
-  const values = data.map(d=>d[1]);
-  const maxAbs = Math.max(1, ...values.map(v=>Math.abs(v)));
-  const barW = data.length ? w / data.length : w;
+  // ── レイアウト定数 ──────────────────────────
+  const padL = 38;  // Y軸ラベル用
+  const padR = 6;
+  const padT = 12;
+  const padB = 18;  // X軸ラベル用
+  const gW = cssW - padL - padR;
+  const gH = cssH - padT - padB;
 
-  // 軸（中央ゼロライン）
-  const zeroY = padding + h/2;
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  // Y軸固定スケール
+  const Y_MIN = -40000;
+  const Y_MAX =  70000;
+
+  function toY(val){
+    return padT + gH * (1 - (val - Y_MIN) / (Y_MAX - Y_MIN));
+  }
+
+  const zeroY = toY(0);
+  const colW  = gW / 12;
+  const barW  = colW * 0.48;
+
+  // ── グリッド線（破線） ───────────────────────
+  ctx.strokeStyle = "rgba(255,255,255,0.07)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 4]);
+  [-30000, 30000, 60000].forEach(v => {
+    const y = toY(v);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(cssW - padR, y);
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // ── ゼロライン ──────────────────────────────
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(padding, zeroY);
-  ctx.lineTo(padding+w, zeroY);
+  ctx.moveTo(padL, zeroY);
+  ctx.lineTo(cssW - padR, zeroY);
   ctx.stroke();
 
-  // バー
-  for(let i=0;i<data.length;i++){
-    const [label, val] = data[i];
-    const x = padding + i*barW + 6;
-    const bw = Math.max(6, barW - 12);
-    const barH = (Math.abs(val)/maxAbs) * (h/2 - 10);
-    const y = val >= 0 ? (zeroY - barH) : zeroY;
+  // ── Y軸ラベル ───────────────────────────────
+  ctx.fillStyle = "rgba(159,176,208,0.8)";
+  ctx.font = `${Math.round(9 * (cssW / 340))}px system-ui`;
+  ctx.textAlign = "right";
+  [
+    { v: 60000, l: "+60K" },
+    { v: 30000, l: "+30K" },
+    { v:     0, l:    "0" },
+    { v:-30000, l: "-30K" },
+  ].forEach(({ v, l }) => {
+    ctx.fillText(l, padL - 4, toY(v) + 3.5);
+  });
 
-    ctx.fillStyle = val>=0 ? "rgba(40,209,124,0.75)" : "rgba(255,97,97,0.75)";
-    ctx.fillRect(x, y, bw, barH);
+  // ── 棒グラフ ────────────────────────────────
+  monthly.forEach((val, i) => {
+    if(val === 0) return;
 
-    // ラベル（間引き）
-    if(data.length <= 12 || i % Math.ceil(data.length/12) === 0){
-      ctx.fillStyle = "rgba(231,238,252,0.75)";
-      ctx.font = "12px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText(label, x + bw/2, padding + h + 18);
+    const cx = padL + colW * i + colW / 2;
+    const bx = cx - barW / 2;
+    const isPlus = val > 0;
+    const color = isPlus ? "#28d17c" : "#ff6161";
+
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = 7;
+    ctx.fillStyle   = isPlus
+      ? "rgba(40,209,124,0.82)"
+      : "rgba(255,97,97,0.82)";
+
+    const r = 3; // 角丸半径
+
+    if(isPlus){
+      // 上向き：上側だけ角丸
+      const barTop = toY(val);
+      const barH   = zeroY - barTop;
+      ctx.beginPath();
+      ctx.moveTo(bx + r, barTop);
+      ctx.lineTo(bx + barW - r, barTop);
+      ctx.quadraticCurveTo(bx + barW, barTop, bx + barW, barTop + r);
+      ctx.lineTo(bx + barW, zeroY);
+      ctx.lineTo(bx, zeroY);
+      ctx.lineTo(bx, barTop + r);
+      ctx.quadraticCurveTo(bx, barTop, bx + r, barTop);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // 下向き：下側だけ角丸
+      const barBot = toY(val);
+      ctx.beginPath();
+      ctx.moveTo(bx, zeroY);
+      ctx.lineTo(bx + barW, zeroY);
+      ctx.lineTo(bx + barW, barBot - r);
+      ctx.quadraticCurveTo(bx + barW, barBot, bx + barW - r, barBot);
+      ctx.lineTo(bx + r, barBot);
+      ctx.quadraticCurveTo(bx, barBot, bx, barBot - r);
+      ctx.lineTo(bx, zeroY);
+      ctx.closePath();
+      ctx.fill();
     }
+
+    ctx.shadowBlur = 0;
+  });
+
+  // ── 折れ線グラフ（累積収支） ─────────────────
+  if(cumulative.length > 0){
+    // 累積の絶対最大値でスケール調整
+    const cumAbsMax = Math.max(...cumulative.map(Math.abs), 1);
+    const CUM_MIN = -(cumAbsMax * 1.35);
+    const CUM_MAX =   cumAbsMax * 1.35;
+
+    function toCumY(v){
+      return padT + gH * (1 - (v - CUM_MIN) / (CUM_MAX - CUM_MIN));
+    }
+
+    // 折れ線パス
+    ctx.beginPath();
+    ctx.strokeStyle = "#00bcd4";
+    ctx.lineWidth   = 2;
+    ctx.lineJoin    = "round";
+    ctx.lineCap     = "round";
+    ctx.shadowColor = "#00bcd4";
+    ctx.shadowBlur  = 8;
+
+    cumulative.forEach((v, i) => {
+      const cx = padL + colW * i + colW / 2;
+      const cy = toCumY(v);
+      i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // 現在月グロードット
+    const lastIdx = cumulative.length - 1;
+    const dotX = padL + colW * lastIdx + colW / 2;
+    const dotY = toCumY(cumulative[lastIdx]);
+
+    // 外側グロー
+    const grad = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 11);
+    grad.addColorStop(0, "rgba(0,188,212,0.55)");
+    grad.addColorStop(1, "rgba(0,188,212,0)");
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 11, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // ドット本体
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle   = "#00bcd4";
+    ctx.shadowColor = "#00bcd4";
+    ctx.shadowBlur  = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
-  // タイトル
-  ctx.fillStyle = "rgba(231,238,252,0.85)";
-  ctx.font = "14px system-ui";
-  ctx.textAlign = "left";
-  ctx.fillText(mode==="year" ? "年別収支" : "月別収支", padding, 22);
+  // ── X軸 月ラベル（1〜12） ───────────────────
+  ctx.fillStyle = "rgba(159,176,208,0.65)";
+  ctx.font      = `${Math.round(9 * (cssW / 340))}px system-ui`;
+  ctx.textAlign = "center";
+  for(let i = 0; i < 12; i++){
+    const cx = padL + colW * i + colW / 2;
+    ctx.fillText(String(i + 1), cx, cssH - 3);
+  }
 }
+// ======================
+// ▲▲▲ 年間収支グラフここまで ▲▲▲
+// ======================
 
 // ======================
 // CSV / バックアップ
@@ -563,12 +657,10 @@ function exportCSV(){
   const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
   const file = new File([blob], "slot_ledger.csv", { type:"text/csv" });
 
-  // iPhoneなら共有シート優先
   if(navigator.share){
     navigator.share({ files:[file], title:"パチスロ収支表CSV" }).catch(()=>{});
     return;
   }
-  // PCならダウンロード
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = "slot_ledger.csv";
@@ -589,7 +681,6 @@ async function restoreJSON(file){
   const text = await file.text();
   const data = JSON.parse(text);
   if(!Array.isArray(data)) throw new Error("形式が違います");
-  // ざっくり検証して投入
   for(const e of data){
     if(!e.id) e.id = uid();
     if(!e.date) continue;
@@ -651,7 +742,6 @@ async function loadAndRender(){
   renderFilters();
   renderLedger();
   renderSummary();
-  renderYearGraph();
 }
 
 function bindUI(){
@@ -671,7 +761,6 @@ function bindUI(){
   $("btnPinOk").onclick = tryUnlockPIN;
   $("btnPinCancel").onclick = ()=>{ closePINUI(); $("lockMsg").textContent=""; };
 
-  // 設定：ロックON/OFF
   $("toggleLock").checked = lockEnabled();
   $("toggleLock").onchange = (e)=>{
     localStorage.setItem(LS.lockEnabled, e.target.checked ? "1" : "0");
@@ -679,7 +768,6 @@ function bindUI(){
     else showLock(false);
   };
 
-  // 設定：パスキー
   $("btnSetupPasskey").onclick = async ()=>{
     try{
       await setupPasskey();
@@ -688,12 +776,8 @@ function bindUI(){
       alert(`設定できません：${e.message || e}\n\n※ httpsで開いていないと動きません（GitHub Pagesで公開するとOK）`);
     }
   };
-  $("btnDisablePasskey").onclick = ()=>{
-    disablePasskey();
-    alert("パスキーを解除しました。");
-  };
+  $("btnDisablePasskey").onclick = ()=>{ disablePasskey(); alert("パスキーを解除しました。"); };
 
-  // 設定：PIN
   $("btnSetPIN").onclick = async ()=>{
     const pin = prompt("PINを4〜8桁で設定してください（忘れないでください）");
     if(!pin) return;
@@ -701,12 +785,8 @@ function bindUI(){
     await setPIN(pin);
     alert("PINを設定しました。");
   };
-  $("btnClearPIN").onclick = ()=>{
-    clearPIN();
-    alert("PINを解除しました。");
-  };
+  $("btnClearPIN").onclick = ()=>{ clearPIN(); alert("PINを解除しました。"); };
 
-  // データ
   $("btnBackup").onclick = backupJSON;
   $("fileRestore").onchange = async (e)=>{
     const file = e.target.files?.[0];
@@ -725,6 +805,14 @@ function bindUI(){
     await wipeAll();
     await loadAndRender();
   };
+
+  // ウィンドウリサイズ時にCanvas再描画
+  window.addEventListener("resize", () => {
+    const summaryTab = $("tab-summary");
+    if(summaryTab && !summaryTab.classList.contains("hidden")){
+      renderYearGraph();
+    }
+  }, { passive: true });
 }
 
 // iOS Safari ピンチズーム抑止
@@ -736,21 +824,20 @@ async function main(){
   await openDB();
   bindUI();
   await loadAndRender();
-    // 起動時：今日の年・月をデフォルトにする
+
+  // 起動時：今日の年・月をデフォルトに
   const now = new Date();
   filterY = String(now.getFullYear());
   filterM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-
   renderFilters();
   renderLedger();
 
-  // 初期表示は集計タブ（今月の集計をファーストビューに）
-switchToTab("summary");
+  // 初期表示は集計タブ
+  switchToTab("summary");
 
   // 起動時ロック
   if(lockEnabled()){
     showLock(true);
-    // パスキーが無くPINも無い場合、解除手段がないので警告
     if(!passkeyEnabled() && !hasPIN()){
       $("lockMsg").textContent = "解除手段が未設定です。設定タブでPINかパスキーを設定してください。";
     }
@@ -762,52 +849,3 @@ switchToTab("summary");
   }
 }
 main();
-function renderYearGraph(){
-  const barsEl = document.getElementById("yearBars");
-  const avgEl  = document.getElementById("yearAvg");
-
-  if(!barsEl) return;
-
-  barsEl.innerHTML = "";
-
-  const now         = new Date();
-  const currentYear = now.getFullYear(); // ★Bug修正: year → currentYear（変数名衝突を回避）
-
-  let monthly = new Array(12).fill(0);
-  let total   = 0;
-  let count   = 0;
-
-  // ★Bug修正1: ledger → entries
-  // ★Bug修正2: e.out / e.in → e.payout / e.investment
-  entries.forEach(e => {
-    const d = new Date(e.date);
-    if(d.getFullYear() === currentYear){
-      const m    = d.getMonth();
-      const diff = (Number(e.payout) || 0) - (Number(e.investment) || 0);
-      monthly[m] += diff;
-    }
-  });
-
-  monthly.forEach(v => {
-    total += v;
-    count++;
-  });
-
-  const avg = count ? Math.round(total / count) : 0;
-
-  // ★Bug修正3: ラベルを画像と合わせる
-  if(avgEl) avgEl.textContent = "年間平均収支：" + avg.toLocaleString() + "円";
-
-  const max = Math.max(...monthly.map(v => Math.abs(v)), 1);
-
-  monthly.forEach(v => {
-    const bar = document.createElement("div");
-    bar.className = "bar";
-    if(v < 0) bar.classList.add("minus");
-
-    const h = Math.abs(v) / max * 100;
-    bar.style.height = h + "%";
-
-    barsEl.appendChild(bar);
-  });
-}

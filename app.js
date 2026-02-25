@@ -647,6 +647,7 @@ async function loadAndRender(){
   renderFilters();
   renderLedger();
   renderSummary();
+  renderYearGraph();
 }
 
 function bindUI(){
@@ -762,3 +763,49 @@ switchToTab("summary");
   }
 }
 main();
+function renderYearGraph(){
+
+  const barsEl = document.getElementById("yearBars");
+  const avgEl = document.getElementById("yearAvg");
+
+  if(!barsEl) return;
+
+  barsEl.innerHTML = "";
+
+  const now = new Date();
+  const year = now.getFullYear();
+
+  let monthly = new Array(12).fill(0);
+  let total = 0;
+  let count = 0;
+
+  entries.forEach(e=>{
+    const d = new Date(e.date);
+    if(d.getFullYear() === year){
+      const m = d.getMonth();
+      const diff = (e.return || 0) - (e.invest || 0);
+      monthly[m] += diff;
+    }
+  });
+
+  monthly.forEach(v=>{
+    total += v;
+    count++;
+  });
+
+  const avg = Math.round(total / count);
+  avgEl.textContent = "平均: " + avg.toLocaleString() + "円";
+
+  const max = Math.max(...monthly.map(v=>Math.abs(v)),1);
+
+  monthly.forEach(v=>{
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    if(v < 0) bar.classList.add("minus");
+
+    const h = Math.abs(v)/max*100;
+    bar.style.height = h + "%";
+
+    barsEl.appendChild(bar);
+  });
+}

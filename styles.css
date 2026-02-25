@@ -399,3 +399,43 @@ button, input, select {
   letter-spacing: 0.04em;
   font-weight: 600;
 }
+.year-graph{
+  margin-top:20px;
+  padding:16px;
+}
+
+.year-graph-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.year-graph .title{
+  font-size:14px;
+  opacity:0.8;
+}
+
+.year-graph .avg{
+  font-size:13px;
+  color:#8fffd1;
+}
+
+.year-graph .bars{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  height:120px;
+  position:relative;
+}
+
+.year-graph .bar{
+  width:6%;
+  border-radius:6px;
+  background:linear-gradient(to top,#5fd0ff,#7bffb3);
+  opacity:0.8;
+}
+
+.year-graph .bar.minus{
+  background:linear-gradient(to top,#ff6b6b,#ff9a9a);
+}

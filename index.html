@@ -76,16 +76,18 @@
           <div class="year-graph-header">
             <div class="title">年間収支</div>
           </div>
-          <!-- ▼▼▼ ここが変更点：divバーをCanvasに置き換え ▼▼▼ -->
           <canvas id="yearCanvas"></canvas>
-          <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
         </div>
 
-        <h3>今月の集計</h3>
-        <div id="currentMonthBox" class="month-card card"></div>
-
-        <h3 style="margin-top:16px;">過去月の集計</h3>
-        <div id="pastMonthsBox"></div>
+        <!-- ▼▼▼ 月別カルーセル（今月＋過去月） ▼▼▼ -->
+        <div class="carousel-section">
+          <h3 class="carousel-title">今月の集計</h3>
+          <div class="carousel-outer">
+            <div class="carousel-track" id="monthCarousel"></div>
+          </div>
+          <div class="carousel-dots" id="carouselDots"></div>
+        </div>
+        <!-- ▲▲▲ カルーセルここまで ▲▲▲ -->
 
       </div>
     </div>
@@ -104,7 +106,6 @@
             <button id="btnDisablePasskey" class="btn">解除</button>
           </div>
         </div>
-
         <div class="row space">
           <div>
             <div class="k">PINロック</div>
@@ -115,7 +116,6 @@
             <button id="btnClearPIN" class="btn">PIN解除</button>
           </div>
         </div>
-
         <div class="row space">
           <div>
             <div class="k">ロックを有効にする</div>
@@ -126,8 +126,7 @@
             <span></span>
           </label>
         </div>
-
-        <p class="muted small">※ Face ID（パスキー）は「https」で開いているときだけ動きます。GitHub Pagesで公開するとOK。</p>
+        <p class="muted small">※ Face ID（パスキー）は「https」で開いているときだけ動きます。</p>
       </div>
 
       <div class="card">
@@ -152,16 +151,12 @@
       <div class="form">
         <label>日付</label>
         <input id="inpDate" class="input" type="date" />
-
         <label>投資（円）</label>
         <input id="inpInv" class="input" type="number" inputmode="numeric" placeholder="例：12000" />
-
         <label>回収（円）</label>
         <input id="inpPay" class="input" type="number" inputmode="numeric" placeholder="例：18000" />
-
         <label>メモ（任意）</label>
         <input id="inpMemo" class="input" type="text" placeholder="例：朝イチ、設定良さそう等" />
-
         <div class="row space">
           <div class="muted">収支：<span id="profitPreview">0</span>円</div>
           <div class="row gap">

@@ -322,11 +322,7 @@ function buildCarousel(months, monthMap, currentKey){
           投資 ${fmtYen(data.investment)} / 回収 ${fmtYen(data.payout)}<br>
           回数 ${data.count} / 勝率 ${wr.toFixed(1)}%
         </div>
-        <div class="mc-divider"></div>
-        <div class="mc-footer">
-          <span class="mc-footer-label">回数 ${data.count}</span>
-          <span class="mc-footer-val ${cls}">${sign}${p.toLocaleString("ja-JP")}円</span>
-        </div>`;
+`;
 
       // クリックで明細タブへ
       card.onclick=()=>{

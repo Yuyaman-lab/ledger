@@ -420,9 +420,9 @@ button, input, select {
 .year-graph .bar{
   width:100%;
 }
-
+/* ★Bug修正: width:6% → width:100% (グリッド内でバーを正しく表示) */
 .year-graph .bar{
-  width:6%;
+  width:100%;
   border-radius:6px;
   background:linear-gradient(to top,#5fd0ff,#7bffb3);
   opacity:0.8;
@@ -476,4 +476,11 @@ button, input, select {
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.05),
     0 10px 30px rgba(0,0,0,0.4);
+}
+.month-card{
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.08);
+  padding:20px;
 }

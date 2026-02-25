@@ -409,6 +409,7 @@ function renderSummary(){
       pastBox.appendChild(buildMonthRow(m, monthMap.get(m), false));
     }
   }
+  renderYearGraph();
 }
 
 function buildMonthRow(monthKey, data, highlight){
@@ -455,14 +456,17 @@ function buildMonthRow(monthKey, data, highlight){
     <div class="profit ${p>=0?"plus":"minus"}">${fmtYen(p)}</div>
   `;
 
-  // 追加：タップでその月の明細へ
+  // ★Bug修正: switchToTab("summary") → 明細タブへ正しく遷移
   row.onclick = () => {
     filterY = monthKey.slice(0,4);
-    filterM = monthKey;          // "YYYY-MM"
-    renderFilters();             // セレクトに反映
-    renderLedger();              // 明細描画
-    switchToTab("ledger");       // 明細タブへ
+    filterM = monthKey;
+    // タブボタンを直接クリックして正しく画面切替
+    const ledgerTabBtn = document.querySelector('.tab[data-tab="ledger"]');
+    if(ledgerTabBtn) ledgerTabBtn.click();
+    renderFilters();
+    renderLedger();
   };
+
 
   if(highlight){
     row.style.borderColor = "rgba(79,140,255,.45)";
@@ -740,11 +744,6 @@ async function main(){
   renderFilters();
   renderLedger();
 
-  // ファーストビューを明細にする（今の仕様を維持）
-  if (typeof switchToTab === "function") {
-    switchToTab("ledger");
-  }
-
   // 初期表示は集計タブ（今月の集計をファーストビューに）
 switchToTab("summary");
 
@@ -764,46 +763,49 @@ switchToTab("summary");
 }
 main();
 function renderYearGraph(){
-
   const barsEl = document.getElementById("yearBars");
-  const avgEl = document.getElementById("yearAvg");
+  const avgEl  = document.getElementById("yearAvg");
 
   if(!barsEl) return;
 
   barsEl.innerHTML = "";
 
-  const now = new Date();
-  const year = now.getFullYear();
+  const now         = new Date();
+  const currentYear = now.getFullYear(); // ★Bug修正: year → currentYear（変数名衝突を回避）
 
   let monthly = new Array(12).fill(0);
-  let total = 0;
-  let count = 0;
+  let total   = 0;
+  let count   = 0;
 
-  ledger.forEach(e=>{
+  // ★Bug修正1: ledger → entries
+  // ★Bug修正2: e.out / e.in → e.payout / e.investment
+  entries.forEach(e => {
     const d = new Date(e.date);
-    if(d.getFullYear() === year){
-      const m = d.getMonth();
-      const diff = (e.out || 0) - (e.in || 0);
+    if(d.getFullYear() === currentYear){
+      const m    = d.getMonth();
+      const diff = (Number(e.payout) || 0) - (Number(e.investment) || 0);
       monthly[m] += diff;
     }
   });
 
-  monthly.forEach(v=>{
+  monthly.forEach(v => {
     total += v;
     count++;
   });
 
-  const avg = Math.round(total / count);
-  avgEl.textContent = "平均: " + avg.toLocaleString() + "円";
+  const avg = count ? Math.round(total / count) : 0;
 
-  const max = Math.max(...monthly.map(v=>Math.abs(v)),1);
+  // ★Bug修正3: ラベルを画像と合わせる
+  if(avgEl) avgEl.textContent = "年間平均収支：" + avg.toLocaleString() + "円";
 
-  monthly.forEach(v=>{
+  const max = Math.max(...monthly.map(v => Math.abs(v)), 1);
+
+  monthly.forEach(v => {
     const bar = document.createElement("div");
     bar.className = "bar";
     if(v < 0) bar.classList.add("minus");
 
-    const h = Math.abs(v)/max*100;
+    const h = Math.abs(v) / max * 100;
     bar.style.height = h + "%";
 
     barsEl.appendChild(bar);

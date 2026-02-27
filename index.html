@@ -9,6 +9,15 @@
   <meta name="theme-color" content="#0b1220" />
 </head>
 <body class="navy-ui">
+
+  <!-- ★ スプラッシュ画面 -->
+  <div id="splashScreen">
+    <video id="splashVideo" playsinline webkit-playsinline muted autoplay>
+      <source src="opening.mp4" type="video/mp4">
+    </video>
+    <div id="splashSkip">タップしてスキップ</div>
+  </div>
+
   <header class="topbar">
     <h1>パチスロ収支表</h1>
     <div class="top-actions">
@@ -62,24 +71,18 @@
     <!-- 集計 -->
     <div id="tab-summary" class="panel">
       <div class="panel-scroll">
-
-        <!-- 統計カード 2×2 -->
         <div class="grid">
           <div class="stat card"><div class="k">総収支</div><div id="statTotal" class="v"></div></div>
           <div class="stat card"><div class="k">勝率</div><div id="statWinRate" class="v"></div></div>
           <div class="stat card"><div class="k">平均投資</div><div id="statAvgInv" class="v"></div></div>
           <div class="stat card"><div class="k">平均回収</div><div id="statAvgPay" class="v"></div></div>
         </div>
-
-        <!-- 年間収支グラフ（Canvas） -->
         <div class="year-graph card" id="yearGraph">
           <div class="year-graph-header">
             <div class="title">年間収支</div>
           </div>
           <canvas id="yearCanvas"></canvas>
         </div>
-
-        <!-- ▼▼▼ 月別カルーセル（今月＋過去月） ▼▼▼ -->
         <div class="carousel-section">
           <h3 class="carousel-title">今月の集計</h3>
           <div class="carousel-outer">
@@ -87,8 +90,6 @@
           </div>
           <div class="carousel-dots" id="carouselDots"></div>
         </div>
-        <!-- ▲▲▲ カルーセルここまで ▲▲▲ -->
-
       </div>
     </div>
 
@@ -128,7 +129,6 @@
         </div>
         <p class="muted small">※ Face ID（パスキー）は「https」で開いているときだけ動きます。</p>
       </div>
-
       <div class="card">
         <h3>データ</h3>
         <div class="row gap">
@@ -144,7 +144,7 @@
     </section>
   </main>
 
-  <!-- 追加/編集モーダル -->
+  <!-- モーダル -->
   <div id="modal" class="modal hidden">
     <div class="modal-body card">
       <h2 id="modalTitle">追加</h2>

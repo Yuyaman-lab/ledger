@@ -1,4 +1,45 @@
 // ======================
+//  スプラッシュ画面制御
+// ======================
+(function(){
+  const splash = document.getElementById("splashScreen");
+  const video  = document.getElementById("splashVideo");
+  if (!splash || !video) return;
+
+  // スプラッシュを閉じる共通処理
+  function dismissSplash() {
+    splash.classList.add("splash-fade");
+    setTimeout(() => { splash.style.display = "none"; }, 650);
+  }
+
+  // 動画終了時に自動で閉じる
+  video.addEventListener("ended", dismissSplash);
+
+  // フォールバック: 動画が5.5秒以内に再生されなければ強制クローズ
+  const fallback = setTimeout(dismissSplash, 5500);
+
+  // タップ/クリックでスキップ（1秒後から有効）
+  setTimeout(() => {
+    splash.style.cursor = "pointer";
+    const skip = document.getElementById("splashSkip");
+    if (skip) skip.style.pointerEvents = "auto";
+    splash.addEventListener("click", function onTap() {
+      clearTimeout(fallback);
+      dismissSplash();
+      splash.removeEventListener("click", onTap);
+    }, { once: true });
+  }, 1000);
+
+  // iOS Safari では自動再生のために明示的に play() を呼ぶ
+  video.play().catch(() => {
+    // 自動再生ブロック時は即スキップ
+    clearTimeout(fallback);
+    dismissSplash();
+  });
+})();
+
+
+// ======================
 //  便利関数
 // ======================
 const $ = (id) => document.getElementById(id);

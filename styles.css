@@ -10,6 +10,8 @@
   --ng:#ff6161;
   --border:rgba(255,255,255,.08);
   --radius:14px;
+  --font-main:'Outfit','Noto Sans JP',sans-serif;
+  --font-mono:'DM Mono',monospace;
 }
 
 *{box-sizing:border-box}
@@ -20,7 +22,7 @@ html,body{
   /* iOS Safari の100vh問題を避けるため dvh を使用 */
   height:100dvh;
   overflow:hidden; /* body自体はスクロールさせない */
-  font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP",sans-serif;
+  font-family: var(--font-main);
   color:var(--text);
   background:linear-gradient(180deg,var(--bg),#070b14);
   touch-action:manipulation;
@@ -37,7 +39,7 @@ html,body{
   border-bottom:1px solid var(--border);
   flex-shrink:0;
 }
-.topbar h1{margin:0;font-size:17px;font-weight:700}
+.topbar h1{margin:0;font-size:17px;font-weight:800;font-family:var(--font-main);letter-spacing:.02em}
 .top-actions{display:flex;gap:8px}
 
 /* ===== Container & Tabs ===== */
@@ -58,12 +60,13 @@ html,body{
   border:1px solid var(--border);
   background:rgba(255,255,255,.03);
   color:var(--text);border-radius:12px;
-  font-size:13px;cursor:pointer;
+  font-size:13px;font-weight:600;cursor:pointer;
+  font-family:var(--font-main);
 }
 .tab.active{
   background:rgba(79,140,255,.18);
   border-color:rgba(79,140,255,.35);
-  font-weight:700;
+  font-weight:800;
 }
 
 /* ===== Panel ===== */
@@ -104,7 +107,7 @@ html,body{
   background:rgba(255,255,255,.04);
   color:var(--text);
   padding:9px 12px;border-radius:12px;cursor:pointer;
-  font-size:13px;
+  font-size:13px;font-weight:600;font-family:var(--font-main);
 }
 .btn.primary{background:rgba(79,140,255,.25);border-color:rgba(79,140,255,.35)}
 .btn.danger{background:rgba(255,79,109,.16);border-color:rgba(255,79,109,.32)}
@@ -121,7 +124,7 @@ html,body{
   width:100%;padding:12px 14px;
   border-radius:12px;border:1px solid var(--border);
   background:rgba(0,0,0,.18);color:var(--text);
-  font-size:16px;line-height:1.4;
+  font-size:16px;line-height:1.4;font-family:var(--font-main);
 }
 .filters{display:flex;gap:8px;margin-bottom:10px}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -134,13 +137,14 @@ html,body{
 .badge{
   display:inline-block;padding:4px 10px;
   border-radius:999px;border:1px solid var(--border);
-  font-size:12px;color:var(--muted);
+  font-size:11px;color:var(--muted);
+  font-family:var(--font-mono);letter-spacing:.04em;
 }
-.profit{font-weight:700;font-size:18px;white-space:nowrap}
+.profit{font-weight:800;font-size:18px;white-space:nowrap;font-family:var(--font-main)}
 .profit.plus{color:var(--ok)}
 .profit.minus{color:var(--ng)}
 .muted{color:var(--muted)}
-.small{font-size:12px}
+.small{font-size:12px;font-family:var(--font-mono)}
 .empty{padding:14px}
 
 /* ===== Modal ===== */
@@ -160,16 +164,102 @@ body.modal-open{position:fixed;width:100%;overflow:hidden}
   padding:14px;background:rgba(0,0,0,.6);
 }
 .msg{margin-top:8px;color:var(--muted)}
-label{font-size:13px;color:var(--muted)}
+label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.04em}
 
-/* ===== Stat grid ===== */
-.grid{
-  display:grid;gap:8px;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+/* ===== ヒーロー集計カード ===== */
+.hero-card{
+  background:var(--card);
+  border:1px solid rgba(79,140,255,.22);
+  border-radius:var(--radius);
+  padding:20px 20px 18px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.hero-card::before{
+  content:'';
+  position:absolute;
+  top:-1px;left:18px;right:60px;
+  height:1px;
+  background:linear-gradient(90deg,rgba(79,140,255,.65),transparent);
+}
+.hero-card::after{
+  content:'';
+  position:absolute;
+  top:-50px;right:-50px;
+  width:180px;height:180px;
+  background:radial-gradient(circle,rgba(79,140,255,.07),transparent 70%);
+  pointer-events:none;
+}
+.hero-top{
+  display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;
 }
-.stat .k{color:var(--muted);font-size:11px}
-.stat .v{font-size:20px;font-weight:800;margin-top:3px}
+.hero-label{
+  font-family:var(--font-mono);
+  font-size:9px;letter-spacing:.15em;
+  color:var(--muted);text-transform:uppercase;
+}
+.prev-badge{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:8px;
+  font-family:var(--font-mono);
+  font-size:11px;font-weight:500;letter-spacing:.04em;
+  border:1px solid rgba(79,140,255,.2);
+  background:rgba(79,140,255,.08);
+  color:var(--text);white-space:nowrap;
+}
+.prev-badge.up{
+  border-color:rgba(40,209,124,.22);
+  background:rgba(40,209,124,.08);
+  color:var(--ok);
+}
+.prev-badge.down{
+  border-color:rgba(255,97,97,.22);
+  background:rgba(255,97,97,.08);
+  color:var(--ng);
+}
+.hero-amount{
+  font-family:var(--font-main);
+  font-size:44px;font-weight:800;
+  letter-spacing:-.025em;line-height:1;
+  margin-bottom:16px;
+}
+.hero-amount.plus{color:var(--ok)}
+.hero-amount.minus{color:var(--ng)}
+.hero-amount.zero{color:var(--muted)}
+.hero-divider{
+  height:1px;background:var(--border);margin-bottom:14px;
+}
+.hero-meta{
+  display:flex;gap:0;
+}
+.hero-meta-item{
+  flex:1;padding-right:12px;
+  border-right:1px solid var(--border);
+  margin-right:12px;
+}
+.hero-meta-item:last-child{
+  padding-right:0;border-right:none;margin-right:0;
+}
+.meta-k{
+  font-family:var(--font-mono);
+  font-size:9px;letter-spacing:.12em;
+  color:var(--muted);text-transform:uppercase;
+  margin-bottom:5px;
+}
+.meta-v{
+  font-family:var(--font-main);
+  font-size:18px;font-weight:800;
+  letter-spacing:-.01em;line-height:1;
+  color:var(--text);
+}
+.meta-v-sub{
+  font-family:var(--font-mono);
+  font-size:10px;font-weight:400;
+  color:var(--muted);letter-spacing:.04em;
+  margin-top:3px;
+}
 
 /* ===== Switch ===== */
 .switch{position:relative;display:inline-block;width:56px;height:32px}
@@ -200,7 +290,7 @@ label{font-size:13px;color:var(--muted)}
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:8px;
 }
-.year-graph .title{font-size:13px;font-weight:700;opacity:.9}
+.year-graph .title{font-size:13px;font-weight:700;opacity:.9;font-family:var(--font-main)}
 #yearCanvas{display:block;width:100%;height:160px;border-radius:6px}
 
 /* ===================================================
@@ -215,7 +305,7 @@ label{font-size:13px;color:var(--muted)}
 .carousel-title{
   margin:0;
   font-size:13px;font-weight:700;
-  color:var(--text);
+  color:var(--text);font-family:var(--font-main);
 }
 
 /* 外側ラッパー：横幅フル・overflow hidden で見切れを表現 */
@@ -293,11 +383,13 @@ label{font-size:13px;color:var(--muted)}
   font-weight:800;
   color:var(--text);
   letter-spacing:.02em;
+  font-family:var(--font-main);
 }
 .mc-profit{
   font-size:20px;
   font-weight:800;
   letter-spacing:-.01em;
+  font-family:var(--font-main);
 }
 .mc-profit.plus{color:var(--ok)}
 .mc-profit.minus{color:var(--ng)}
@@ -308,6 +400,7 @@ label{font-size:13px;color:var(--muted)}
   color:var(--muted);
   line-height:1.7;
   margin-bottom:10px;
+  font-family:var(--font-mono);
 }
 
 /* 区切り線 */

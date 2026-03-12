@@ -261,20 +261,65 @@ function switchToTab(tab){
 }
 
 // ======================
-// 集計（4カード + カルーセル）
+// 集計（ヒーローカード + カルーセル）
 // ======================
 function renderSummary(){
-  // 4カード
+  // 全体集計
   const total=entries.length;
   const wins=entries.filter(e=>profitOf(e)>0).length;
   const totalProfit=entries.reduce((a,e)=>a+profitOf(e),0);
   const winRate=total?(wins/total*100):0;
   const avgInv=total?Math.round(entries.reduce((a,e)=>a+Number(e.investment||0),0)/total):0;
   const avgPay=total?Math.round(entries.reduce((a,e)=>a+Number(e.payout||0),0)/total):0;
-  $("statTotal").textContent=fmtYen(totalProfit);
-  $("statWinRate").textContent=`${winRate.toFixed(1)}% (${wins}/${total})`;
-  $("statAvgInv").textContent=fmtYen(avgInv);
-  $("statAvgPay").textContent=fmtYen(avgPay);
+
+  // ── ヒーローカード 総収支 ──
+  const elTotal=$("statTotal");
+  if(elTotal){
+    elTotal.textContent=fmtYen(totalProfit);
+    elTotal.className="hero-amount"+(totalProfit>0?" plus":totalProfit<0?" minus":" zero");
+  }
+
+  // ── 勝率 ──
+  $("statWinRate").textContent=total?`${winRate.toFixed(1)}%`:"—";
+  $("statWinCount").textContent=total?`(${wins}/${total})`:"";
+
+  // ── 平均投資・平均回収 ──
+  $("statAvgInv").textContent=total?fmtYen(avgInv):"—";
+  $("statAvgPay").textContent=total?fmtYen(avgPay):"—";
+
+  // ── 前月比バッジ ──
+  const now=new Date();
+  const curKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+  const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const prevKey=`${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,"0")}`;
+
+  const curProfit=entries.filter(e=>ym(e.date)===curKey).reduce((a,e)=>a+profitOf(e),0);
+  const prevProfit=entries.filter(e=>ym(e.date)===prevKey).reduce((a,e)=>a+profitOf(e),0);
+
+  const badge=$("statPrevMonth");
+  if(badge){
+    if(entries.filter(e=>ym(e.date)===prevKey).length===0){
+      badge.textContent="";
+      badge.className="prev-badge";
+      badge.style.display="none";
+    } else {
+      badge.style.display="";
+      if(prevProfit===0){
+        badge.textContent="前月比 —";
+        badge.className="prev-badge";
+      } else {
+        const diff=curProfit-prevProfit;
+        const pct=Math.round(Math.abs(diff)/Math.abs(prevProfit)*100);
+        if(diff>=0){
+          badge.textContent=`↑ 前月比 +${pct}%`;
+          badge.className="prev-badge up";
+        } else {
+          badge.textContent=`↓ 前月比 −${pct}%`;
+          badge.className="prev-badge down";
+        }
+      }
+    }
+  }
 
   // 月別集計マップ
   const monthMap=new Map();
@@ -289,8 +334,7 @@ function renderSummary(){
   }
 
   // 今月キー
-  const now=new Date();
-  const currentKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+  const currentKey=curKey;
 
   // 降順ソート（今月が先頭）
   const allMonths=[...monthMap.keys()].sort((a,b)=>b.localeCompare(a));

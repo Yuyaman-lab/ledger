@@ -1,56 +1,64 @@
-const CACHE_NAME = 'ledger-v2'; // ★Bug修正: CACHE → CACHE_NAME に統一
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.webmanifest",
-  "./sw.js"
+// ======================
+// Service Worker - キャッシュファースト戦略
+// PWA起動時に白フラッシュを防ぐため、HTML/CSSをキャッシュから即座に返す
+// ======================
+
+const CACHE_NAME = 'slot-ledger-v2';
+const CORE_ASSETS = [
+  './',
+  './index.html',
+  './styles.css',
+  './app.js'
 ];
 
-self.addEventListener("install", (e) => {
+// インストール：コアファイルを事前キャッシュ
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS))
+  );
   self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((c) => c.addAll(ASSETS)) // ★修正
-  );
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    Promise.all([
-      caches.keys().then(keys =>
-        Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null))) // ★修正
-      ),
-      self.clients.claim()
-    ])
+// アクティベーション：古いキャッシュを削除
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    )
   );
+  self.clients.claim();
 });
 
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  const url = new URL(req.url);
+// フェッチ：キャッシュファースト → ネットワークフォールバック
+// 成功したネットワーク応答でキャッシュを更新（Stale While Revalidate）
+self.addEventListener('fetch', event => {
+  const req = event.request;
 
-  if (url.origin !== location.origin) return;
+  // GETリクエストのみキャッシュ対象
+  if (req.method !== 'GET') return;
 
-  const isHTML = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
-  const isCSS  = url.pathname.endsWith(".css");
-  const isJS   = url.pathname.endsWith(".js");
-
-  if (isHTML || isCSS || isJS) {
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(req, copy)); // ★修正
-          return res;
-        })
-        .catch(() => caches.match(req))
+  // Google Fonts等の外部リソースはネットワークファースト
+  if (!req.url.startsWith(self.location.origin)) {
+    event.respondWith(
+      fetch(req).catch(() => caches.match(req))
     );
     return;
   }
 
-  // ★Bug修正: 末尾の閉じカッコ不足を修正
-  e.respondWith(
-    caches.match(req).then(res => res || fetch(req))
+  // コアファイル：キャッシュファースト + バックグラウンド更新
+  event.respondWith(
+    caches.match(req).then(cached => {
+      // バックグラウンドでキャッシュを更新
+      const fetchPromise = fetch(req).then(response => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+        }
+        return response;
+      }).catch(() => cached);
+
+      // キャッシュがあれば即座に返す（白フラッシュ防止の要）
+      return cached || fetchPromise;
+    })
   );
 });

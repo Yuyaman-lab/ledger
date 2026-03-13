@@ -7,6 +7,10 @@
 
   // スプラッシュを閉じる共通処理
   function dismissSplash() {
+    // アプリ本体を表示（白フラッシュ防止用の visibility:hidden を解除）
+    document.querySelectorAll('.topbar,.container,.lock,.modal').forEach(function(el){
+      el.style.visibility = 'visible';
+    });
     splash.classList.add("splash-fade");
     setTimeout(() => { splash.style.display = "none"; }, 650);
   }
@@ -287,36 +291,46 @@ function renderSummary(){
   $("statAvgInv").textContent=total?fmtYen(avgInv):"—";
   $("statAvgPay").textContent=total?fmtYen(avgPay):"—";
 
-  // ── 前月比バッジ ──
+  // ── 前月比バッジ（総収支 ÷ 前月末までの総収支 × 100）──
   const now=new Date();
   const curKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-  const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);
-  const prevKey=`${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,"0")}`;
 
-  const curProfit=entries.filter(e=>ym(e.date)===curKey).reduce((a,e)=>a+profitOf(e),0);
-  const prevProfit=entries.filter(e=>ym(e.date)===prevKey).reduce((a,e)=>a+profitOf(e),0);
+  // 前月末までの総収支 ＝ 今月以外の全エントリの収支合計
+  const prevCumulative=entries.filter(e=>ym(e.date)<curKey).reduce((a,e)=>a+profitOf(e),0);
 
   const badge=$("statPrevMonth");
   if(badge){
-    if(entries.filter(e=>ym(e.date)===prevKey).length===0){
+    // 前月末までにデータがなければ非表示
+    if(entries.filter(e=>ym(e.date)<curKey).length===0){
       badge.textContent="";
       badge.className="prev-badge";
       badge.style.display="none";
+    } else if(prevCumulative===0){
+      // 前月末までの総収支が±0の場合は計算不能
+      badge.style.display="";
+      badge.textContent="前月比 —";
+      badge.className="prev-badge";
+    } else if(prevCumulative<0){
+      // 前月末までの総収支がマイナスの場合は比率が意味をなさないため
+      // 改善/悪化の方向だけ表示
+      badge.style.display="";
+      if(totalProfit>=prevCumulative){
+        badge.textContent="↑ 前月比 改善";
+        badge.className="prev-badge up";
+      } else {
+        badge.textContent="↓ 前月比 悪化";
+        badge.className="prev-badge down";
+      }
     } else {
       badge.style.display="";
-      if(prevProfit===0){
-        badge.textContent="前月比 —";
-        badge.className="prev-badge";
+      // totalProfit（現在の総収支）÷ prevCumulative（前月末までの総収支）× 100
+      const pct=Math.round(totalProfit/prevCumulative*100);
+      if(pct>=100){
+        badge.textContent=`↑ 前月比 ${pct}%`;
+        badge.className="prev-badge up";
       } else {
-        const diff=curProfit-prevProfit;
-        const pct=Math.round(Math.abs(diff)/Math.abs(prevProfit)*100);
-        if(diff>=0){
-          badge.textContent=`↑ 前月比 +${pct}%`;
-          badge.className="prev-badge up";
-        } else {
-          badge.textContent=`↓ 前月比 −${pct}%`;
-          badge.className="prev-badge down";
-        }
+        badge.textContent=`↓ 前月比 ${pct}%`;
+        badge.className="prev-badge down";
       }
     }
   }

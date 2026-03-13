@@ -4,10 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>パチスロ収支表</title>
+  <!-- 白フラッシュ防止：外部CSS読み込み前に黒背景を確定させる -->
+  <style>html,body{background:#000!important;margin:0}
+  .topbar,.container,.lock,.modal{visibility:hidden!important}</style>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" /></noscript>
   <link rel="stylesheet" href="styles.css" />
   <meta name="theme-color" content="#000000" />
 
@@ -402,10 +406,6 @@
   })();
   </script>
 
-  <style>
-  /* ── 白フラッシュ防止：アプリ本体をスプラッシュ終了まで非表示 ── */
-  .topbar, .container, .lock, .modal { visibility: hidden; }
-  </style>
 
   <header class="topbar">
     <h1>パチスロ収支表</h1>

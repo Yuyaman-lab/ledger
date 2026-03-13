@@ -7,9 +7,9 @@
 
   // スプラッシュを閉じる共通処理
   function dismissSplash() {
-    // アプリ本体を表示（白フラッシュ防止用の visibility:hidden を解除）
+    // アプリ本体を表示（白フラッシュ防止用の visibility:hidden !important を上書き）
     document.querySelectorAll('.topbar,.container,.lock,.modal').forEach(function(el){
-      el.style.visibility = 'visible';
+      el.style.setProperty('visibility', 'visible', 'important');
     });
     splash.classList.add("splash-fade");
     setTimeout(() => { splash.style.display = "none"; }, 650);

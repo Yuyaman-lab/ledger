@@ -290,7 +290,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:8px;
 }
-.year-graph .title{font-size:13px;font-weight:700;opacity:.9;font-family:var(--font-main)}
+.year-graph .yg-title{font-size:13px;font-weight:700;opacity:.9;font-family:var(--font-main)}
 #yearCanvas{display:block;width:100%;height:160px;border-radius:6px}
 
 /* ===================================================
@@ -461,7 +461,4 @@ button,input,select{accent-color:#1e3a5f}
 
 /* ===== スプラッシュ画面 ===== */
 /* スタイルは index.html 内の <style> タグで管理しています */
-#splashScreen.splash-fade {
-  opacity: 0 !important;
-  pointer-events: none;
-}
+/* スプラッシュフェードアウトは index.html 内の #splash.done で管理 */

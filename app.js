@@ -7,18 +7,14 @@
 
   // スプラッシュを閉じる共通処理
   function dismissSplash() {
-    // アプリ本体を表示（白フラッシュ防止用の visibility:hidden !important を上書き）
-    document.querySelectorAll('.topbar,.container,.lock,.modal').forEach(function(el){
-      el.style.setProperty('visibility', 'visible', 'important');
-    });
     splash.classList.add("splash-fade");
     setTimeout(() => { splash.style.display = "none"; }, 650);
   }
 
-  // アニメーション終了（4秒）後に自動で閉じる
-  const autoClose = setTimeout(dismissSplash, 4200);
+  // アニメーション終了（4秒+暗転1秒）後に自動で閉じる
+  const autoClose = setTimeout(dismissSplash, 5200);
 
-  // タップ/クリックでスキップ（1秒後から有効）
+  // タップ/クリックでスキップ（暗転完了後1.2秒から有効）
   setTimeout(() => {
     splash.style.cursor = "pointer";
     splash.addEventListener("click", function onTap() {
@@ -26,7 +22,7 @@
       dismissSplash();
       splash.removeEventListener("click", onTap);
     }, { once: true });
-  }, 1000);
+  }, 1200);
 })();
 
 
@@ -482,89 +478,136 @@ function renderYearGraph(){
   let cum=0;
   for(let i=0;i<=currentMonth;i++){ cum+=monthly[i]; cumulative.push(cum); }
 
-  const padL=38,padR=6,padT=10,padB=16;
+  const fs=Math.max(8,Math.round(9*cssW/340));
+  const padL=40,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
-  const Y_MIN=-40000, Y_MAX=70000;
+
+  // 固定Y軸レンジ（単位：千円 -50〜+100）
+  const Y_MIN=-70000, Y_MAX=130000;
   function toY(v){ return padT+gH*(1-(v-Y_MIN)/(Y_MAX-Y_MIN)); }
   const zeroY=toY(0);
-  const colW=gW/12, barW=colW*.48;
+  const colW=gW/12, barW=colW*.42;
 
   // グリッド線
-  ctx.strokeStyle="rgba(255,255,255,.06)";
-  ctx.lineWidth=1; ctx.setLineDash([3,4]);
-  [-30000,30000,60000].forEach(v=>{
+  ctx.strokeStyle="rgba(255,255,255,.04)";
+  ctx.lineWidth=0.5; ctx.setLineDash([3,4]);
+  [50000,100000,-50000].forEach(v=>{
     ctx.beginPath(); ctx.moveTo(padL,toY(v)); ctx.lineTo(cssW-padR,toY(v)); ctx.stroke();
   });
   ctx.setLineDash([]);
 
   // ゼロライン
-  ctx.strokeStyle="rgba(255,255,255,.22)"; ctx.lineWidth=1;
+  ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.lineWidth=0.5;
   ctx.beginPath(); ctx.moveTo(padL,zeroY); ctx.lineTo(cssW-padR,zeroY); ctx.stroke();
 
   // Y軸ラベル
-  ctx.fillStyle="rgba(159,176,208,.8)";
-  ctx.font=`${Math.max(8,Math.round(9*cssW/340))}px system-ui`; ctx.textAlign="right";
-  [{v:60000,l:"+60K"},{v:30000,l:"+30K"},{v:0,l:"0"},{v:-30000,l:"-30K"}].forEach(({v,l})=>{
+  ctx.fillStyle="rgba(159,176,208,.7)";
+  ctx.font=fs+"px system-ui"; ctx.textAlign="right";
+  [{v:100000,l:"+100"},{v:50000,l:"+50"},{v:0,l:"0"},{v:-50000,l:"-50"}].forEach(({v,l})=>{
     ctx.fillText(l,padL-4,toY(v)+3.5);
   });
 
-  // 棒グラフ
+  // ── 棒グラフ（ネオングラデーション＋値ラベル）──
   monthly.forEach((val,i)=>{
     if(val===0) return;
     const cx=padL+colW*i+colW/2, bx=cx-barW/2;
-    const isPlus=val>0;
-    ctx.shadowColor=isPlus?"#28d17c":"#ff6161";
-    ctx.shadowBlur=7;
-    ctx.fillStyle=isPlus?"rgba(40,209,124,.82)":"rgba(255,97,97,.82)";
+    const isP=val>0;
+    const top=isP?toY(val):zeroY;
+    const bot=isP?zeroY:toY(val);
     const r=3;
-    if(isPlus){
-      const top=toY(val), h=zeroY-top;
-      ctx.beginPath();
+
+    // グラデーション塗り
+    const grad=ctx.createLinearGradient(0,top,0,bot);
+    if(isP){
+      grad.addColorStop(0,"rgba(0,230,160,0.95)");
+      grad.addColorStop(1,"rgba(0,180,120,0.25)");
+    } else {
+      grad.addColorStop(0,"rgba(255,80,80,0.25)");
+      grad.addColorStop(1,"rgba(255,60,60,0.95)");
+    }
+    ctx.fillStyle=grad;
+    ctx.shadowColor=isP?"#00e6a0":"#ff5050";
+    ctx.shadowBlur=10;
+
+    ctx.beginPath();
+    if(isP){
       ctx.moveTo(bx+r,top); ctx.lineTo(bx+barW-r,top);
       ctx.quadraticCurveTo(bx+barW,top,bx+barW,top+r);
-      ctx.lineTo(bx+barW,zeroY); ctx.lineTo(bx,zeroY); ctx.lineTo(bx,top+r);
-      ctx.quadraticCurveTo(bx,top,bx+r,top); ctx.closePath(); ctx.fill();
+      ctx.lineTo(bx+barW,bot); ctx.lineTo(bx,bot); ctx.lineTo(bx,top+r);
+      ctx.quadraticCurveTo(bx,top,bx+r,top);
     } else {
-      const bot=toY(val);
-      ctx.beginPath();
-      ctx.moveTo(bx,zeroY); ctx.lineTo(bx+barW,zeroY);
+      ctx.moveTo(bx,top); ctx.lineTo(bx+barW,top);
       ctx.lineTo(bx+barW,bot-r); ctx.quadraticCurveTo(bx+barW,bot,bx+barW-r,bot);
       ctx.lineTo(bx+r,bot); ctx.quadraticCurveTo(bx,bot,bx,bot-r);
-      ctx.lineTo(bx,zeroY); ctx.closePath(); ctx.fill();
+      ctx.lineTo(bx,top);
     }
+    ctx.closePath(); ctx.fill();
     ctx.shadowBlur=0;
+
+    // 値ラベル
+    const absV=Math.abs(val);
+    let label;
+    if(absV>=10000) label=(val>0?"+":"")+Math.round(val/1000)+"K";
+    else label=(val>0?"+":"")+val.toLocaleString();
+    ctx.fillStyle=isP?"rgba(100,235,175,.85)":"rgba(255,130,130,.8)";
+    ctx.font="bold "+Math.max(7,Math.round(8*cssW/340))+"px system-ui";
+    ctx.textAlign="center";
+    ctx.fillText(label,cx,isP?top-5:bot+Math.max(9,Math.round(10*cssW/340)));
   });
 
-  // 折れ線
+  // ── 累計エリアフィル ──
   if(cumulative.length>0){
     const cumMax=Math.max(...cumulative.map(Math.abs),1);
     const CUM_MIN=-cumMax*1.35, CUM_MAX=cumMax*1.35;
     function toCumY(v){ return padT+gH*(1-(v-CUM_MIN)/(CUM_MAX-CUM_MIN)); }
-    ctx.beginPath(); ctx.strokeStyle="#00bcd4"; ctx.lineWidth=2;
+
+    // エリア
+    ctx.beginPath();
+    cumulative.forEach((v,i)=>{
+      const cx=padL+colW*i+colW/2;
+      i===0?ctx.moveTo(cx,toCumY(v)):ctx.lineTo(cx,toCumY(v));
+    });
+    const lastX=padL+colW*(cumulative.length-1)+colW/2;
+    const firstX=padL+colW/2;
+    ctx.lineTo(lastX,toCumY(0)); ctx.lineTo(firstX,toCumY(0)); ctx.closePath();
+    const areaGrad=ctx.createLinearGradient(0,padT,0,cssH-padB);
+    areaGrad.addColorStop(0,"rgba(0,188,255,0.16)");
+    areaGrad.addColorStop(1,"rgba(0,188,255,0.01)");
+    ctx.fillStyle=areaGrad; ctx.fill();
+
+    // ライン（グロー）
+    ctx.beginPath(); ctx.strokeStyle="#00bcff"; ctx.lineWidth=2.5;
     ctx.lineJoin="round"; ctx.lineCap="round";
-    ctx.shadowColor="#00bcd4"; ctx.shadowBlur=8;
+    ctx.shadowColor="#00bcff"; ctx.shadowBlur=12;
     cumulative.forEach((v,i)=>{
       const cx=padL+colW*i+colW/2;
       i===0?ctx.moveTo(cx,toCumY(v)):ctx.lineTo(cx,toCumY(v));
     });
     ctx.stroke(); ctx.shadowBlur=0;
 
-    // グロードット
+    // ドット
+    cumulative.forEach((v,i)=>{
+      const cx=padL+colW*i+colW/2, cy=toCumY(v);
+      ctx.beginPath(); ctx.arc(cx,cy,2.5,0,Math.PI*2);
+      ctx.fillStyle="#00bcff"; ctx.fill();
+    });
+
+    // 最終ドット（グロー）
     const li=cumulative.length-1;
     const dx=padL+colW*li+colW/2, dy=toCumY(cumulative[li]);
-    const g=ctx.createRadialGradient(dx,dy,0,dx,dy,11);
-    g.addColorStop(0,"rgba(0,188,212,.55)"); g.addColorStop(1,"rgba(0,188,212,0)");
-    ctx.beginPath(); ctx.arc(dx,dy,11,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    const rg=ctx.createRadialGradient(dx,dy,0,dx,dy,14);
+    rg.addColorStop(0,"rgba(0,188,255,.5)"); rg.addColorStop(1,"rgba(0,188,255,0)");
+    ctx.beginPath(); ctx.arc(dx,dy,14,0,Math.PI*2); ctx.fillStyle=rg; ctx.fill();
     ctx.beginPath(); ctx.arc(dx,dy,4.5,0,Math.PI*2);
-    ctx.fillStyle="#00bcd4"; ctx.shadowColor="#00bcd4"; ctx.shadowBlur=12; ctx.fill();
+    ctx.fillStyle="#00bcff"; ctx.shadowColor="#00bcff"; ctx.shadowBlur=14; ctx.fill();
     ctx.shadowBlur=0;
   }
 
   // X軸ラベル
-  ctx.fillStyle="rgba(159,176,208,.65)";
-  ctx.font=`${Math.max(8,Math.round(9*cssW/340))}px system-ui`; ctx.textAlign="center";
+  ctx.fillStyle="rgba(159,176,208,.6)";
+  ctx.font=fs+"px system-ui"; ctx.textAlign="center";
   for(let i=0;i<12;i++){
-    ctx.fillText(String(i+1),padL+colW*i+colW/2,cssH-3);
+    ctx.fillText(String(i+1),padL+colW*i+colW/2,cssH-4);
   }
 }
 

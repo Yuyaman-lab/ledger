@@ -402,7 +402,7 @@
   })();
   </script>
 
-  <header class="topbar" style="display:none">
+  <header class="topbar" style="opacity:0">
     <h1>パチスロ収支表</h1>
     <div class="top-actions">
       <button id="btnExport" class="btn">CSV出力</button>
@@ -429,7 +429,7 @@
     </div>
   </section>
 
-  <main class="container" style="display:none">
+  <main class="container" style="opacity:0">
     <nav class="tabs">
       <button class="tab" data-tab="ledger">明細</button>
       <button class="tab active" data-tab="summary">集計</button>
@@ -568,19 +568,18 @@
   // スプラッシュ終了後にメインコンテンツを表示
   (function(){
     var sp = document.getElementById('splashScreen');
+    var tb = document.querySelector('.topbar');
+    var ct = document.querySelector('.container');
     if(!sp) { 
-      document.querySelector('.topbar').style.display='';
-      document.querySelector('.container').style.display='';
+      if(tb) tb.style.opacity='1';
+      if(ct) ct.style.opacity='1';
       return; 
     }
-    var orig = sp.classList.add.bind(sp.classList);
     var ob = new MutationObserver(function(){
       if(sp.classList.contains('splash-fade')){
         ob.disconnect();
-        var tb = document.querySelector('.topbar');
-        var ct = document.querySelector('.container');
-        if(tb) tb.style.display='';
-        if(ct) ct.style.display='';
+        if(tb) tb.style.opacity='1';
+        if(ct) ct.style.opacity='1';
       }
     });
     ob.observe(sp, {attributes:true, attributeFilter:['class']});

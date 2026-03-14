@@ -461,4 +461,7 @@ button,input,select{accent-color:#1e3a5f}
 
 /* ===== スプラッシュ画面 ===== */
 /* スタイルは index.html 内の <style> タグで管理しています */
-/* スプラッシュフェードアウトは index.html 内の #splash.done で管理 */
+#splashScreen.splash-fade {
+  opacity: 0 !important;
+  pointer-events: none;
+}

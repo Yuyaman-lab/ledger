@@ -138,13 +138,13 @@ html,body{
   display:inline-block;padding:4px 10px;
   border-radius:999px;border:1px solid var(--border);
   font-size:11px;color:var(--muted);
-  font-family:var(--font-mono);letter-spacing:.04em;
+  font-family:var(--font-main);letter-spacing:.02em;
 }
 .profit{font-weight:800;font-size:18px;white-space:nowrap;font-family:var(--font-main)}
 .profit.plus{color:var(--ok)}
 .profit.minus{color:var(--ng)}
 .muted{color:var(--muted)}
-.small{font-size:12px;font-family:var(--font-mono)}
+.small{font-size:12px;font-family:var(--font-main)}
 .empty{padding:14px}
 
 /* ===== Modal ===== */
@@ -291,7 +291,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   margin-bottom:8px;
 }
 .year-graph .yg-title{font-size:13px;font-weight:700;opacity:.9;font-family:var(--font-main)}
-#yearCanvas{display:block;width:100%;height:160px;border-radius:6px}
+#yearCanvas{display:block;width:100%;height:180px;border-radius:6px}
 
 /* ===================================================
    ▼▼▼  カルーセル  ▼▼▼

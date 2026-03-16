@@ -400,7 +400,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   color:var(--muted);
   line-height:1.7;
   margin-bottom:10px;
-  font-family:var(--font-mono);
+  font-family:var(--font-main);
 }
 
 /* 区切り線 */

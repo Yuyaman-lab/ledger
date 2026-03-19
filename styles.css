@@ -228,6 +228,32 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 .hero-amount.plus{color:var(--ok)}
 .hero-amount.minus{color:var(--ng)}
 .hero-amount.zero{color:var(--muted)}
+.hero-badges{
+  display:flex;gap:6px;margin-bottom:12px;min-height:0;
+}
+.hero-badges:empty{display:none}
+.hero-badge-item{
+  display:inline-flex;align-items:center;gap:3px;
+  border-radius:6px;padding:2px 8px;
+  font-family:var(--font-main);
+  font-size:10px;font-weight:500;
+  white-space:nowrap;
+}
+.hero-badge-item.week-up{
+  background:rgba(40,209,124,.08);
+  border:0.5px solid rgba(40,209,124,.22);
+  color:var(--ok);
+}
+.hero-badge-item.week-down{
+  background:rgba(255,97,97,.08);
+  border:0.5px solid rgba(255,97,97,.22);
+  color:var(--ng);
+}
+.hero-badge-item.streak{
+  background:rgba(0,188,255,.08);
+  border:0.5px solid rgba(0,188,255,.22);
+  color:rgba(0,188,255,.9);
+}
 .hero-divider{
   height:1px;background:var(--border);margin-bottom:14px;
 }

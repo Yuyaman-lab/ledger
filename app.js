@@ -307,55 +307,9 @@ function renderSummary(){
   $("statAvgInv").textContent=total?fmtK(avgInv):"—";
   $("statAvgPay").textContent=total?fmtK(avgPay):"—";
 
-  // ── バッジ（今週収支 + 連勝/連敗ストリーク）──
-  const badgeEl=$("heroBadges");
-  if(badgeEl){
-    badgeEl.innerHTML="";
-    if(total>0){
-      // 今週の収支
-      const now=new Date();
-      const dayOfWeek=now.getDay(); // 0=日
-      const mondayOffset=dayOfWeek===0?6:dayOfWeek-1;
-      const monday=new Date(now); monday.setDate(now.getDate()-mondayOffset);
-      const monStr=monday.toISOString().slice(0,10);
-      const weekProfit=entries.filter(e=>e.date>=monStr).reduce((a,e)=>a+profitOf(e),0);
-      const weekEntries=entries.filter(e=>e.date>=monStr).length;
-      if(weekEntries>0){
-        const isUp=weekProfit>=0;
-        const wb=document.createElement("span");
-        wb.className="hero-badge-item "+(isUp?"week-up":"week-down");
-        const arrow=isUp?"▲":"▼";
-        wb.textContent=`${arrow} 今週 ${weekProfit>=0?"+":""}${weekProfit.toLocaleString("ja-JP")}`;
-        badgeEl.appendChild(wb);
-      }
-
-      // 連勝/連敗ストリーク
-      const sorted=[...entries].sort((a,b)=>b.date.localeCompare(a.date));
-      if(sorted.length>0){
-        const firstResult=profitOf(sorted[0])>0;
-        let streak=0;
-        for(const e of sorted){
-          if((profitOf(e)>0)===firstResult) streak++;
-          else break;
-        }
-        if(streak>=2){
-          const sb=document.createElement("span");
-          sb.className="hero-badge-item streak";
-          sb.textContent=firstResult?`${streak}連勝中`:`${streak}連敗中`;
-          if(!firstResult){
-            sb.style.background="rgba(255,97,97,.08)";
-            sb.style.borderColor="rgba(255,97,97,.22)";
-            sb.style.color="var(--ng)";
-          }
-          badgeEl.appendChild(sb);
-        }
-      }
-    }
-  }
-
   // ── 前月比バッジ（総収支 ÷ 前月末までの総収支 × 100）──
-  const now2=new Date();
-  const curKey=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,"0")}`;
+  const now=new Date();
+  const curKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
 
   // 前月末までの総収支 ＝ 今月以外の全エントリの収支合計
   const prevCumulative=entries.filter(e=>ym(e.date)<curKey).reduce((a,e)=>a+profitOf(e),0);

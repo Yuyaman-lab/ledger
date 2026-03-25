@@ -125,6 +125,11 @@ html,body{
   border-radius:12px;border:1px solid var(--border);
   background:rgba(0,0,0,.18);color:var(--text);
   font-size:16px;line-height:1.4;font-family:var(--font-main);
+  height:48px;box-sizing:border-box;
+}
+input[type="date"].input{
+  -webkit-appearance:none;appearance:none;
+  min-height:48px;max-height:48px;
 }
 .filters{display:flex;gap:8px;margin-bottom:10px}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:10px}

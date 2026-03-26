@@ -1,5 +1,5 @@
 // ======================
-//  スプラッシュ画面制御
+//  スプラッシュ画面制御（ネオンGOGO版）
 // ======================
 (function(){
   const splash = document.getElementById("splashScreen");
@@ -11,10 +11,52 @@
     setTimeout(() => { splash.style.display = "none"; }, 650);
   }
 
-  // アニメーション終了（4秒+暗転1秒）後に自動で閉じる
-  const autoClose = setTimeout(dismissSplash, 5200);
+  // ── アニメーションシーケンス ──
+  var el = function(id) { return document.getElementById(id); };
 
-  // タップ/クリックでスキップ（暗転完了後1.2秒から有効）
+  // 0.5s: ENラベル
+  setTimeout(function(){ el('spEnLabel').classList.add('show'); }, 500);
+
+  // 0.8s: ネオンフリッカー開始
+  setTimeout(function(){
+    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
+      el(id).classList.add('on');
+    });
+  }, 800);
+
+  // 2.0s: ディバイダー
+  setTimeout(function(){ el('spDivLine').classList.add('show'); }, 2000);
+
+  // 2.4s: 「収支管理」
+  setTimeout(function(){
+    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
+      el(id).classList.add('show');
+    });
+  }, 2400);
+
+  // 2.7s: ダイヤモンド
+  setTimeout(function(){ el('spDiamonds').classList.add('show'); }, 2700);
+
+  // 3.0s: タグライン
+  setTimeout(function(){ el('spTagWrap').classList.add('show'); }, 3000);
+
+  // 3.5s: GOGO登場 + テキストパワーアップ
+  setTimeout(function(){
+    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
+      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
+    });
+    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
+      el(id).classList.add('powerup');
+    });
+  }, 3500);
+
+  // 3.8s: TAP TO START
+  setTimeout(function(){ el('spTapStart').classList.add('show'); }, 3800);
+
+  // 5.5s: 自動で閉じる（GOGO演出の余韻込み）
+  const autoClose = setTimeout(dismissSplash, 5500);
+
+  // 1.2秒後からタップスキップ有効
   setTimeout(() => {
     splash.style.cursor = "pointer";
     splash.addEventListener("click", function onTap() {
@@ -264,7 +306,6 @@ function switchToTab(tab){
 // 集計（ヒーローカード + カルーセル）
 // ======================
 function renderSummary(){
-  // 全体集計
   const total=entries.length;
   const wins=entries.filter(e=>profitOf(e)>0).length;
   const totalProfit=entries.reduce((a,e)=>a+profitOf(e),0);
@@ -274,18 +315,15 @@ function renderSummary(){
   const avgInv=total?Math.round(totalInv/total):0;
   const avgPay=total?Math.round(totalPay/total):0;
 
-  // ── ヒーローカード 総収支 ──
   const elTotal=$("statTotal");
   if(elTotal){
     elTotal.textContent=fmtYen(totalProfit);
     elTotal.className="hero-amount"+(totalProfit>0?" plus":totalProfit<0?" minus":" zero");
   }
 
-  // ── 勝率 ──
   $("statWinRate").textContent=total?`${winRate.toFixed(1)}%`:"—";
   $("statWinCount").textContent=total?`(${wins}/${total})`:"";
 
-  // ── 回収率 ──
   const elRecovery=$("statRecovery");
   if(elRecovery){
     if(total&&totalInv>0){
@@ -298,7 +336,6 @@ function renderSummary(){
     }
   }
 
-  // ── 平均投資・平均回収（K表示）──
   function fmtK(v){
     if(v===0) return "—";
     const k=Math.round(v/1000);
@@ -307,28 +344,21 @@ function renderSummary(){
   $("statAvgInv").textContent=total?fmtK(avgInv):"—";
   $("statAvgPay").textContent=total?fmtK(avgPay):"—";
 
-  // ── 前月比バッジ（総収支 ÷ 前月末までの総収支 × 100）──
   const now=new Date();
   const curKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-
-  // 前月末までの総収支 ＝ 今月以外の全エントリの収支合計
   const prevCumulative=entries.filter(e=>ym(e.date)<curKey).reduce((a,e)=>a+profitOf(e),0);
 
   const badge=$("statPrevMonth");
   if(badge){
-    // 前月末までにデータがなければ非表示
     if(entries.filter(e=>ym(e.date)<curKey).length===0){
       badge.textContent="";
       badge.className="prev-badge";
       badge.style.display="none";
     } else if(prevCumulative===0){
-      // 前月末までの総収支が±0の場合は計算不能
       badge.style.display="";
       badge.textContent="前月比 —";
       badge.className="prev-badge";
     } else if(prevCumulative<0){
-      // 前月末までの総収支がマイナスの場合は比率が意味をなさないため
-      // 改善/悪化の方向だけ表示
       badge.style.display="";
       if(totalProfit>=prevCumulative){
         badge.textContent="↑ 前月比 改善";
@@ -339,7 +369,6 @@ function renderSummary(){
       }
     } else {
       badge.style.display="";
-      // totalProfit（現在の総収支）÷ prevCumulative（前月末までの総収支）× 100
       const pct=Math.round(totalProfit/prevCumulative*100);
       if(pct>=100){
         badge.textContent=`↑ 前月比 ${pct}%`;
@@ -351,7 +380,6 @@ function renderSummary(){
     }
   }
 
-  // 月別集計マップ
   const monthMap=new Map();
   for(const e of entries){
     const key=ym(e.date);
@@ -363,25 +391,18 @@ function renderSummary(){
     monthMap.set(key,cur);
   }
 
-  // 今月キー
   const currentKey=curKey;
-
-  // 降順ソート（今月が先頭）
   const allMonths=[...monthMap.keys()].sort((a,b)=>b.localeCompare(a));
-  // 今月を先頭に（データ未入力でも先頭に表示）
   const orderedMonths=[];
-  if(!allMonths.includes(currentKey)) orderedMonths.push(currentKey); // 今月データなし
+  if(!allMonths.includes(currentKey)) orderedMonths.push(currentKey);
   orderedMonths.push(...allMonths);
 
-  // カルーセル構築
   buildCarousel(orderedMonths, monthMap, currentKey);
-
-  // グラフ
   renderYearGraph();
 }
 
 // ======================
-// ▼▼▼ カルーセル構築 ▼▼▼
+// カルーセル
 // ======================
 function buildCarousel(months, monthMap, currentKey){
   const track=$("monthCarousel");
@@ -396,14 +417,12 @@ function buildCarousel(months, monthMap, currentKey){
     return;
   }
 
-  // カード生成
   months.forEach((monthKey,idx)=>{
     const data=monthMap.get(monthKey);
     const card=document.createElement("div");
     card.className="mc"+(idx===0?" is-active":"");
 
     if(!data){
-      // 今月データなし
       card.innerHTML=`
         <div class="mc-top">
           <span class="mc-month">${monthKey.replace("-","/")}</span>
@@ -423,10 +442,8 @@ function buildCarousel(months, monthMap, currentKey){
         <div class="mc-detail">
           投資 ${fmtYen(data.investment)} / 回収 ${fmtYen(data.payout)}<br>
           回数 ${data.count} / 勝率 ${wr.toFixed(1)}%
-        </div>
-`;
+        </div>`;
 
-      // クリックで明細タブへ
       card.onclick=()=>{
         filterY=monthKey.slice(0,4);
         filterM=monthKey;
@@ -436,18 +453,14 @@ function buildCarousel(months, monthMap, currentKey){
     }
 
     track.appendChild(card);
-
-    // ドット
     const dot=document.createElement("span");
     dot.className="c-dot"+(idx===0?" active":"");
     dotsEl.appendChild(dot);
   });
 
-  // ── スクロールでドット更新 ──────────────────────
   const dots=dotsEl.querySelectorAll(".c-dot");
   const cards=track.querySelectorAll(".mc");
 
-  // IntersectionObserver でアクティブカードを検出
   const observer=new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting&&entry.intersectionRatio>=0.5){
@@ -461,9 +474,6 @@ function buildCarousel(months, monthMap, currentKey){
 
   cards.forEach(c=>observer.observe(c));
 }
-// ======================
-// ▲▲▲ カルーセルここまで ▲▲▲
-// ======================
 
 // ======================
 // 年間収支グラフ（Canvas）
@@ -502,13 +512,11 @@ function renderYearGraph(){
   const padL=40,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
 
-  // 固定Y軸レンジ（単位：千円 -50〜+100）
   const Y_MIN=-70000, Y_MAX=130000;
   function toY(v){ return padT+gH*(1-(v-Y_MIN)/(Y_MAX-Y_MIN)); }
   const zeroY=toY(0);
   const colW=gW/12, barW=colW*.42;
 
-  // グリッド線
   ctx.strokeStyle="rgba(255,255,255,.04)";
   ctx.lineWidth=0.5; ctx.setLineDash([3,4]);
   [50000,100000,-50000].forEach(v=>{
@@ -516,18 +524,15 @@ function renderYearGraph(){
   });
   ctx.setLineDash([]);
 
-  // ゼロライン
   ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.lineWidth=0.5;
   ctx.beginPath(); ctx.moveTo(padL,zeroY); ctx.lineTo(cssW-padR,zeroY); ctx.stroke();
 
-  // Y軸ラベル
   ctx.fillStyle="rgba(159,176,208,.7)";
   ctx.font=fs+"px system-ui"; ctx.textAlign="right";
   [{v:100000,l:"+100"},{v:50000,l:"+50"},{v:0,l:"0"},{v:-50000,l:"-50"}].forEach(({v,l})=>{
     ctx.fillText(l,padL-4,toY(v)+3.5);
   });
 
-  // ── 棒グラフ（ネオングラデーション＋値ラベル）──
   monthly.forEach((val,i)=>{
     if(val===0) return;
     const cx=padL+colW*i+colW/2, bx=cx-barW/2;
@@ -536,7 +541,6 @@ function renderYearGraph(){
     const bot=isP?zeroY:toY(val);
     const r=3;
 
-    // グラデーション塗り
     const grad=ctx.createLinearGradient(0,top,0,bot);
     if(isP){
       grad.addColorStop(0,"rgba(0,230,160,0.95)");
@@ -564,7 +568,6 @@ function renderYearGraph(){
     ctx.closePath(); ctx.fill();
     ctx.shadowBlur=0;
 
-    // 値ラベル
     const absV=Math.abs(val);
     let label;
     if(absV>=10000) label=(val>0?"+":"")+Math.round(val/1000)+"K";
@@ -575,13 +578,11 @@ function renderYearGraph(){
     ctx.fillText(label,cx,isP?top-5:bot+Math.max(9,Math.round(10*cssW/340)));
   });
 
-  // ── 累計エリアフィル ──
   if(cumulative.length>0){
     const cumMax=Math.max(...cumulative.map(Math.abs),1);
     const CUM_MIN=-cumMax*1.35, CUM_MAX=cumMax*1.35;
     function toCumY(v){ return padT+gH*(1-(v-CUM_MIN)/(CUM_MAX-CUM_MIN)); }
 
-    // エリア
     ctx.beginPath();
     cumulative.forEach((v,i)=>{
       const cx=padL+colW*i+colW/2;
@@ -595,7 +596,6 @@ function renderYearGraph(){
     areaGrad.addColorStop(1,"rgba(0,188,255,0.01)");
     ctx.fillStyle=areaGrad; ctx.fill();
 
-    // ライン（グロー）
     ctx.beginPath(); ctx.strokeStyle="#00bcff"; ctx.lineWidth=2.5;
     ctx.lineJoin="round"; ctx.lineCap="round";
     ctx.shadowColor="#00bcff"; ctx.shadowBlur=12;
@@ -605,14 +605,12 @@ function renderYearGraph(){
     });
     ctx.stroke(); ctx.shadowBlur=0;
 
-    // ドット
     cumulative.forEach((v,i)=>{
       const cx=padL+colW*i+colW/2, cy=toCumY(v);
       ctx.beginPath(); ctx.arc(cx,cy,2.5,0,Math.PI*2);
       ctx.fillStyle="#00bcff"; ctx.fill();
     });
 
-    // 最終ドット（グロー）
     const li=cumulative.length-1;
     const dx=padL+colW*li+colW/2, dy=toCumY(cumulative[li]);
     const rg=ctx.createRadialGradient(dx,dy,0,dx,dy,14);
@@ -623,7 +621,6 @@ function renderYearGraph(){
     ctx.shadowBlur=0;
   }
 
-  // X軸ラベル
   ctx.fillStyle="rgba(159,176,208,.6)";
   ctx.font=fs+"px system-ui"; ctx.textAlign="center";
   for(let i=0;i<12;i++){
@@ -735,7 +732,6 @@ function bindUI(){
     await wipeAll(); await loadAndRender();
   };
 
-  // リサイズでCanvas再描画
   window.addEventListener("resize",()=>{
     if(!$("tab-summary").classList.contains("hidden")) renderYearGraph();
   },{passive:true});

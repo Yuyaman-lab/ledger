@@ -197,29 +197,35 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   pointer-events:none;
 }
 .hero-top{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:flex-start;justify-content:space-between;
   margin-bottom:10px;
 }
 .hero-label{
   font-family:var(--font-mono);
   font-size:9px;letter-spacing:.15em;
   color:var(--muted);text-transform:uppercase;
+  padding-top:8px;
 }
-.prev-badge{
-  display:flex;align-items:center;gap:4px;
-  padding:4px 10px;border-radius:8px;
+.badge-stack{
+  display:flex;flex-direction:column;gap:6px;align-items:flex-end;
+}
+.prev-badge,.month-avg-badge{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  padding:6px 12px;border-radius:8px;
+  min-width:124px;box-sizing:border-box;
   font-family:var(--font-mono);
   font-size:11px;font-weight:500;letter-spacing:.04em;
   border:1px solid rgba(79,140,255,.2);
   background:rgba(79,140,255,.08);
   color:var(--text);white-space:nowrap;
 }
-.prev-badge.up{
+.prev-badge:empty,.month-avg-badge:empty{display:none}
+.prev-badge.up,.month-avg-badge.up{
   border-color:rgba(40,209,124,.22);
   background:rgba(40,209,124,.08);
   color:var(--ok);
 }
-.prev-badge.down{
+.prev-badge.down,.month-avg-badge.down{
   border-color:rgba(255,97,97,.22);
   background:rgba(255,97,97,.08);
   color:var(--ng);

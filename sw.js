@@ -3,7 +3,7 @@
 // PWA起動時に白フラッシュを防ぐため、HTML/CSSをキャッシュから即座に返す
 // ======================
 
-const CACHE_NAME = 'slot-ledger-v4';
+const CACHE_NAME = 'slot-ledger-v5';
 const CORE_ASSETS = [
   './',
   './index.html',

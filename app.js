@@ -380,6 +380,30 @@ function renderSummary(){
     }
   }
 
+  // 月平均収支バッジ
+  const avgBadge=$("statMonthAvg");
+  if(avgBadge){
+    const uniqueMonths=new Set(entries.map(e=>ym(e.date)));
+    const monthCount=uniqueMonths.size;
+    if(monthCount===0){
+      avgBadge.textContent="";
+      avgBadge.className="month-avg-badge";
+      avgBadge.style.display="none";
+    } else {
+      avgBadge.style.display="";
+      const monthlyAvg=Math.round(totalProfit/monthCount);
+      const absV=Math.abs(monthlyAvg);
+      let valStr;
+      if(absV>=10000) valStr=(monthlyAvg>=0?"+":"-")+Math.round(absV/1000)+"K";
+      else if(absV>0) valStr=(monthlyAvg>=0?"+":"-")+absV.toLocaleString("ja-JP");
+      else valStr="0";
+      avgBadge.textContent=`月平均 ${valStr}`;
+      if(monthlyAvg>0)      avgBadge.className="month-avg-badge up";
+      else if(monthlyAvg<0) avgBadge.className="month-avg-badge down";
+      else                  avgBadge.className="month-avg-badge";
+    }
+  }
+
   const monthMap=new Map();
   for(const e of entries){
     const key=ym(e.date);

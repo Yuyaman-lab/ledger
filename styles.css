@@ -197,14 +197,17 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   pointer-events:none;
 }
 .hero-top{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-bottom:14px;
+}
+.hero-main{
+  flex:1;min-width:0;
 }
 .hero-label{
   font-family:var(--font-mono);
   font-size:9px;letter-spacing:.15em;
   color:var(--muted);text-transform:uppercase;
-  padding-top:8px;
+  margin-bottom:6px;
 }
 .badge-stack{
   display:flex;flex-direction:column;gap:6px;align-items:flex-end;
@@ -234,7 +237,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   font-family:var(--font-main);
   font-size:44px;font-weight:800;
   letter-spacing:-.025em;line-height:1;
-  margin-bottom:16px;
+  margin-bottom:0;
 }
 .hero-amount.plus{color:var(--ok)}
 .hero-amount.minus{color:var(--ng)}

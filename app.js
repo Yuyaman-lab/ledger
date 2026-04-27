@@ -536,14 +536,14 @@ function renderYearGraph(){
   const padL=40,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
 
-  const Y_MIN=-70000, Y_MAX=130000;
+  const Y_MIN=-80000, Y_MAX=330000;
   function toY(v){ return padT+gH*(1-(v-Y_MIN)/(Y_MAX-Y_MIN)); }
   const zeroY=toY(0);
   const colW=gW/12, barW=colW*.42;
 
   ctx.strokeStyle="rgba(255,255,255,.04)";
   ctx.lineWidth=0.5; ctx.setLineDash([3,4]);
-  [50000,100000,-50000].forEach(v=>{
+  [100000,200000,300000,-50000].forEach(v=>{
     ctx.beginPath(); ctx.moveTo(padL,toY(v)); ctx.lineTo(cssW-padR,toY(v)); ctx.stroke();
   });
   ctx.setLineDash([]);
@@ -553,7 +553,7 @@ function renderYearGraph(){
 
   ctx.fillStyle="rgba(159,176,208,.7)";
   ctx.font=fs+"px system-ui"; ctx.textAlign="right";
-  [{v:100000,l:"+100"},{v:50000,l:"+50"},{v:0,l:"0"},{v:-50000,l:"-50"}].forEach(({v,l})=>{
+  [{v:300000,l:"+300"},{v:200000,l:"+200"},{v:100000,l:"+100"},{v:0,l:"0"},{v:-50000,l:"-50"}].forEach(({v,l})=>{
     ctx.fillText(l,padL-4,toY(v)+3.5);
   });
 
@@ -614,10 +614,10 @@ function renderYearGraph(){
     });
     const lastX=padL+colW*(cumulative.length-1)+colW/2;
     const firstX=padL+colW/2;
-    ctx.lineTo(lastX,toCumY(0)); ctx.lineTo(firstX,toCumY(0)); ctx.closePath();
-    const areaGrad=ctx.createLinearGradient(0,padT,0,cssH-padB);
-    areaGrad.addColorStop(0,"rgba(0,188,255,0.16)");
-    areaGrad.addColorStop(1,"rgba(0,188,255,0.01)");
+    ctx.lineTo(lastX,zeroY); ctx.lineTo(firstX,zeroY); ctx.closePath();
+    const areaGrad=ctx.createLinearGradient(0,padT,0,zeroY);
+    areaGrad.addColorStop(0,"rgba(0,188,255,0.18)");
+    areaGrad.addColorStop(1,"rgba(0,188,255,0.02)");
     ctx.fillStyle=areaGrad; ctx.fill();
 
     ctx.beginPath(); ctx.strokeStyle="#00bcff"; ctx.lineWidth=2.5;

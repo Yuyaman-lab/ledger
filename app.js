@@ -184,18 +184,10 @@ function applyFilter(list){
 // タブ
 // ======================
 function setTabs(){
-  document.querySelectorAll(".tab").forEach(btn=>{
+  document.querySelectorAll(".bnav-item[data-tab]").forEach(btn=>{
     btn.onclick=()=>{
-      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
       const tab=btn.dataset.tab;
-      ["ledger","summary","settings"].forEach(t=>{
-        $(`tab-${t}`).classList.toggle("hidden",t!==tab);
-      });
-      if(tab==="summary"){
-        renderSummary();
-        requestAnimationFrame(()=>renderYearGraph());
-      }
+      switchToTab(tab);
     };
   });
 }
@@ -295,9 +287,9 @@ async function saveModal(){
 // switchToTab
 // ======================
 function switchToTab(tab){
-  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".bnav-item[data-tab]").forEach(b=>b.classList.remove("active"));
   document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
+  document.querySelector(`.bnav-item[data-tab="${tab}"]`)?.classList.add("active");
   document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
   if(tab==="summary"){ renderSummary(); requestAnimationFrame(()=>renderYearGraph()); }
 }
@@ -471,7 +463,7 @@ function buildCarousel(months, monthMap, currentKey){
       card.onclick=()=>{
         filterY=monthKey.slice(0,4);
         filterM=monthKey;
-        document.querySelector('.tab[data-tab="ledger"]')?.click();
+        switchToTab("ledger");
         renderFilters(); renderLedger();
       };
     }
@@ -716,7 +708,6 @@ async function loadAndRender(){
 function bindUI(){
   setTabs();
   $("btnAdd").onclick=()=>openModal(null);
-  $("btnExport").onclick=exportCSV;
   $("btnCancel").onclick=closeModal;
   $("btnSave").onclick=saveModal;
   $("inpInv").oninput=updateProfitPreview;

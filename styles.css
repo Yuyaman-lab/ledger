@@ -42,32 +42,75 @@ html,body{
 .topbar h1{margin:0;font-size:17px;font-weight:800;font-family:var(--font-main);letter-spacing:.02em}
 .top-actions{display:flex;gap:8px}
 
-/* ===== Container & Tabs ===== */
+/* ===== Container ===== */
 .container{
   display:flex;
   flex-direction:column;
-  height:calc(100dvh - 52px); /* topbar分 */
+  height:calc(100dvh - 52px - 62px); /* topbar 52px + bottom-nav 62px */
   padding:12px 12px 0;
   overflow:hidden;
 }
-.tabs{
-  display:flex;gap:8px;
-  margin-bottom:10px;
-  flex-shrink:0;
+
+/* ===== Bottom Navigation ===== */
+.bottom-nav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:20;
+  display:flex;
+  background:rgba(10,15,35,.97);
+  border-top:1px solid rgba(79,140,255,.18);
+  padding:8px 0 env(safe-area-inset-bottom,14px);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  height:62px;
 }
-.tab{
-  flex:1;padding:9px 12px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.03);
-  color:var(--text);border-radius:12px;
-  font-size:13px;font-weight:600;cursor:pointer;
-  font-family:var(--font-main);
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;padding:0;
+  background:none;border:none;color:inherit;
+  -webkit-tap-highlight-color:transparent;
 }
-.tab.active{
-  background:rgba(79,140,255,.18);
-  border-color:rgba(79,140,255,.35);
-  font-weight:800;
+.bnav-item svg{
+  width:22px;height:22px;display:block;
+  stroke:var(--muted);
+  transition:stroke .15s;
 }
+.bnav-item .bnav-label{
+  font-size:10px;font-weight:600;color:var(--muted);
+  letter-spacing:.03em;font-family:var(--font-main);
+  transition:color .15s;
+}
+.bnav-item.active svg{
+  stroke:var(--primary);
+  filter:drop-shadow(0 0 6px rgba(79,140,255,.8));
+}
+.bnav-item.active .bnav-label{color:var(--primary);}
+.bnav-item:active{opacity:.7;}
+
+/* 入力ボタン — 中央FAB風 */
+.bnav-fab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;padding:0;
+  background:none;border:none;color:inherit;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-fab-icon{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(79,140,255,.35),rgba(79,140,255,.18));
+  border:1px solid rgba(79,140,255,.45);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(79,140,255,.3);
+  margin-top:-14px;
+}
+.bnav-fab-icon svg{
+  width:20px;height:20px;
+  stroke:rgba(79,140,255,.95);display:block;
+}
+.bnav-fab .bnav-label{
+  font-size:10px;font-weight:700;color:var(--primary);
+  letter-spacing:.03em;font-family:var(--font-main);
+}
+.bnav-fab:active .bnav-fab-icon{opacity:.7;}
 
 /* ===== Panel ===== */
 .panel{

@@ -528,14 +528,14 @@ function renderYearGraph(){
   const padL=40,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
 
-  const Y_MIN=-80000, Y_MAX=330000;
+  const Y_MIN=-200000, Y_MAX=1050000;
   function toY(v){ return padT+gH*(1-(v-Y_MIN)/(Y_MAX-Y_MIN)); }
   const zeroY=toY(0);
   const colW=gW/12, barW=colW*.42;
 
   ctx.strokeStyle="rgba(255,255,255,.04)";
   ctx.lineWidth=0.5; ctx.setLineDash([3,4]);
-  [100000,200000,300000,-50000].forEach(v=>{
+  [250000,500000,750000,1000000,-100000].forEach(v=>{
     ctx.beginPath(); ctx.moveTo(padL,toY(v)); ctx.lineTo(cssW-padR,toY(v)); ctx.stroke();
   });
   ctx.setLineDash([]);
@@ -545,7 +545,7 @@ function renderYearGraph(){
 
   ctx.fillStyle="rgba(159,176,208,.7)";
   ctx.font=fs+"px system-ui"; ctx.textAlign="right";
-  [{v:300000,l:"+300"},{v:200000,l:"+200"},{v:100000,l:"+100"},{v:0,l:"0"},{v:-50000,l:"-50"}].forEach(({v,l})=>{
+  [{v:1000000,l:"+1000"},{v:750000,l:"+750"},{v:500000,l:"+500"},{v:250000,l:"+250"},{v:0,l:"0"},{v:-100000,l:"-100"}].forEach(({v,l})=>{
     ctx.fillText(l,padL-4,toY(v)+3.5);
   });
 
@@ -595,14 +595,10 @@ function renderYearGraph(){
   });
 
   if(cumulative.length>0){
-    const cumMax=Math.max(...cumulative.map(Math.abs),1);
-    const CUM_MIN=-cumMax*1.35, CUM_MAX=cumMax*1.35;
-    function toCumY(v){ return padT+gH*(1-(v-CUM_MIN)/(CUM_MAX-CUM_MIN)); }
-
     ctx.beginPath();
     cumulative.forEach((v,i)=>{
       const cx=padL+colW*i+colW/2;
-      i===0?ctx.moveTo(cx,toCumY(v)):ctx.lineTo(cx,toCumY(v));
+      i===0?ctx.moveTo(cx,toY(v)):ctx.lineTo(cx,toY(v));
     });
     const lastX=padL+colW*(cumulative.length-1)+colW/2;
     const firstX=padL+colW/2;
@@ -617,18 +613,18 @@ function renderYearGraph(){
     ctx.shadowColor="#00bcff"; ctx.shadowBlur=12;
     cumulative.forEach((v,i)=>{
       const cx=padL+colW*i+colW/2;
-      i===0?ctx.moveTo(cx,toCumY(v)):ctx.lineTo(cx,toCumY(v));
+      i===0?ctx.moveTo(cx,toY(v)):ctx.lineTo(cx,toY(v));
     });
     ctx.stroke(); ctx.shadowBlur=0;
 
     cumulative.forEach((v,i)=>{
-      const cx=padL+colW*i+colW/2, cy=toCumY(v);
+      const cx=padL+colW*i+colW/2, cy=toY(v);
       ctx.beginPath(); ctx.arc(cx,cy,2.5,0,Math.PI*2);
       ctx.fillStyle="#00bcff"; ctx.fill();
     });
 
     const li=cumulative.length-1;
-    const dx=padL+colW*li+colW/2, dy=toCumY(cumulative[li]);
+    const dx=padL+colW*li+colW/2, dy=toY(cumulative[li]);
     const rg=ctx.createRadialGradient(dx,dy,0,dx,dy,14);
     rg.addColorStop(0,"rgba(0,188,255,.5)"); rg.addColorStop(1,"rgba(0,188,255,0)");
     ctx.beginPath(); ctx.arc(dx,dy,14,0,Math.PI*2); ctx.fillStyle=rg; ctx.fill();

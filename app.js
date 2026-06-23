@@ -525,7 +525,7 @@ function renderYearGraph(){
   for(let i=0;i<=currentMonth;i++){ cum+=monthly[i]; cumulative.push(cum); }
 
   const fs=Math.max(8,Math.round(9*cssW/340));
-  const padL=40,padR=8,padT=18,padB=20;
+  const padL=52,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
 
   const Y_MIN=-200000, Y_MAX=1050000;

@@ -524,8 +524,12 @@ function renderYearGraph(){
   let cum=0;
   for(let i=0;i<=currentMonth;i++){ cum+=monthly[i]; cumulative.push(cum); }
 
-  const fs=Math.max(8,Math.round(9*cssW/340));
-  const padL=52,padR=8,padT=18,padB=20;
+  const fs=Math.min(13,Math.max(8,Math.round(9*cssW/340)));
+  const yLabels=[{v:1000000,l:"+1000"},{v:750000,l:"+750"},{v:500000,l:"+500"},{v:250000,l:"+250"},{v:0,l:"0"},{v:-100000,l:"-100"}];
+
+  ctx.font=fs+"px system-ui";
+  const maxLabelW=Math.max(...yLabels.map(({l})=>ctx.measureText(l).width));
+  const padL=Math.ceil(maxLabelW)+12,padR=8,padT=18,padB=20;
   const gW=cssW-padL-padR, gH=cssH-padT-padB;
 
   const Y_MIN=-200000, Y_MAX=1050000;
@@ -545,7 +549,7 @@ function renderYearGraph(){
 
   ctx.fillStyle="rgba(159,176,208,.7)";
   ctx.font=fs+"px system-ui"; ctx.textAlign="right";
-  [{v:1000000,l:"+1000"},{v:750000,l:"+750"},{v:500000,l:"+500"},{v:250000,l:"+250"},{v:0,l:"0"},{v:-100000,l:"-100"}].forEach(({v,l})=>{
+  yLabels.forEach(({v,l})=>{
     ctx.fillText(l,padL-4,toY(v)+3.5);
   });
 

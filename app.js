@@ -18,22 +18,14 @@
 
   // ── Phase 1: ネオン点灯シーケンス ──
 
-  // 0.8s: パチスロ ネオンフリッカー開始
+  // 0.8s: パチスロ・収支管理 同時にネオンフリッカー開始
   setTimeout(function(){
-    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
+    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText',
+     'spSubGlow','spSubEdge','spSubText'].forEach(function(id){
       el(id).classList.add('on');
     });
+    el('spDivLine').classList.add('show');
   }, 800);
-
-  // 2.0s: ディバイダー
-  setTimeout(function(){ el('spDivLine').classList.add('show'); }, 2000);
-
-  // 2.4s: 収支管理 点灯
-  setTimeout(function(){
-    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      el(id).classList.add('show');
-    });
-  }, 2400);
 
   // 3.2s: パワーアップ（全体が一瞬強く光る）
   setTimeout(function(){
@@ -41,7 +33,7 @@
       var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
     });
     ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      el(id).classList.add('powerup');
+      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
     });
   }, 3200);
 

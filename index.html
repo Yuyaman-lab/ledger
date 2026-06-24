@@ -107,13 +107,10 @@
   filter: blur(1px); opacity: 0;
 }
 .sp-sub-text {
-  position: relative; color: rgba(40,209,124,0);
+  position: relative; color: rgba(180,255,220,.95); opacity: 0;
 }
-.sp-sub-glow.show { opacity: 1; animation: subGlowBreath 3.5s ease-in-out infinite; }
-.sp-sub-edge.show { opacity: 1; }
-.sp-sub-text.show {
-  color: rgba(180,255,220,.95);
-  text-shadow: 0 0 12px rgba(40,209,124,.5), 0 0 32px rgba(40,209,124,.2);
+.sp-sub-glow.on, .sp-sub-edge.on, .sp-sub-text.on {
+  animation: subNeonOn 2.8s ease-out forwards;
 }
 .sp-sub-glow.powerup { animation: subGlowPowerUp .8s ease-out forwards, subGlowBreath 3.5s ease-in-out .8s infinite; }
 .sp-sub-edge.powerup { animation: subEdgePowerUp .8s ease-out forwards; }
@@ -160,6 +157,24 @@
   0%  { color:rgba(180,255,220,.95); text-shadow:0 0 12px rgba(40,209,124,.5),0 0 32px rgba(40,209,124,.2); transform:scale(1); }
   15% { color:rgba(220,255,240,1);   text-shadow:0 0 30px rgba(40,209,124,.9),0 0 60px rgba(40,209,124,.5); transform:scale(1.05); }
   100%{ color:rgba(180,255,220,.95); text-shadow:0 0 12px rgba(40,209,124,.5),0 0 32px rgba(40,209,124,.2); transform:scale(1); }
+}
+@keyframes subNeonOn {
+  0%   { opacity: 0; text-shadow: none; }
+  4%   { opacity: .9; text-shadow: 0 0 14px rgba(40,209,124,.7), 0 0 36px rgba(40,209,124,.3); }
+  5.5% { opacity: .06; text-shadow: none; }
+  8%   { opacity: .85; text-shadow: 0 0 12px rgba(40,209,124,.6), 0 0 30px rgba(40,209,124,.25); }
+  9%   { opacity: .08; text-shadow: none; }
+  11%  { opacity: .92; text-shadow: 0 0 16px rgba(40,209,124,.7), 0 0 40px rgba(40,209,124,.35); }
+  12.5%{ opacity: .04; text-shadow: none; }
+  16%  { opacity: .7;  text-shadow: 0 0 10px rgba(40,209,124,.5); }
+  17%  { opacity: .1;  text-shadow: none; }
+  20%  { opacity: .95; text-shadow: 0 0 16px rgba(40,209,124,.7), 0 0 44px rgba(40,209,124,.35); }
+  21%  { opacity: .25; text-shadow: none; }
+  23%  { opacity: 1;   text-shadow: 0 0 18px rgba(40,209,124,.8), 0 0 46px rgba(40,209,124,.35), 0 0 80px rgba(40,209,124,.15); }
+  30%  { opacity: .88; text-shadow: 0 0 12px rgba(40,209,124,.5), 0 0 32px rgba(40,209,124,.2); }
+  31%  { opacity: .12; text-shadow: none; }
+  33%  { opacity: 1;   text-shadow: 0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4), 0 0 90px rgba(40,209,124,.18); }
+  100% { opacity: 1;   text-shadow: 0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4), 0 0 90px rgba(40,209,124,.18); }
 }
 
   </style>

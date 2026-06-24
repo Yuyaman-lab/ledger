@@ -17,162 +17,149 @@
     width: 100%; height: 100%;
     background-color: #000 !important;
     overflow: hidden;
+    font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', sans-serif;
   }
   #splashScreen {
     position: fixed; inset: 0; z-index: 99999;
-    background: #000;
+    background: radial-gradient(ellipse 65% 55% at 50% 47%, #0c1a52 0%, #0b1220 45%, #070b14 100%);
     display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease;
+    overflow: hidden;
+    transition: opacity 0.6s ease;
   }
   #splashScreen.splash-fade { opacity: 0 !important; pointer-events: none; }
 
-/* ===== Stage ===== */
-.nfx-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Canvas for particle explosion */
+#splashCanvas {
+  position: absolute; inset: 0; z-index: 20;
+  display: none; pointer-events: none;
 }
 
-/* ===== .netflixintro equivalent =====
-   animation-name: zoom-in / delay: .5s / duration: 3.5s
-   timing-function: ease-in / fill-mode: forwards
-   ===================================== */
-.nfx-intro {
+/* Logo wrap */
+.sp-logo-wrap {
+  position: relative; z-index: 10; text-align: center;
+  transform: translateY(-20px); width: 100%;
+  transition: opacity 0.15s ease;
+}
+
+/* パチスロ — 4-layer neon */
+.sp-neon-halo, .sp-neon-glow, .sp-neon-edge, .sp-neon-text {
+  font-size: 78px; font-weight: 900;
+  letter-spacing: .1em; text-indent: .1em;
   display: block;
-  position: relative;
-  animation: nfxZoomIn 3.5s ease-in 0.5s both;
-  transform-origin: center center;
-}
-
-/* ===== Letter block ([letter="N"] equivalent) =====
-   overflow:hidden clips the lumieres to the text bounds
-   transform-origin: 30% center — matches Netflix
-   ================================================== */
-.nfx-letter-block {
-  position: relative;
-  display: inline-block;
-  overflow: hidden;
-  transform-origin: 30% center;
-}
-
-/* パチスロ text */
-.nfx-pachislot-text {
-  display: block;
-  font-size: 76px;
-  font-weight: 900;
-  letter-spacing: .07em;
-  line-height: 1;
-  color: rgba(200,220,255,.98);
   font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  /* Subtle depth like the Netflix N surface */
-  text-shadow:
-    0 2px 0 rgba(20,50,160,.7),
-    0 -1px 0 rgba(180,210,255,.3),
-    0 0 30px rgba(79,140,255,.5);
-  padding: 2px 4px;
 }
-
-/* ===== Lumieres (fading-lumieres-box equivalent) =====
-   Diagonal light strips that reflect off the text surface.
-   Netflix: .helper-1 { width:19.5%; height:100%; left:22.4%;
-             transform:rotate(180deg); animation-name:fading-lumieres-box }
-   ===================================================== */
-.nfx-lumiere {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  animation: nfxLumieresBox 3.5s ease-in 0.5s both;
-  pointer-events: none;
+.sp-neon-halo {
+  position: absolute; top: 0; left: 0; right: 0;
+  color: rgba(79,140,255,.22); filter: blur(32px); opacity: 0;
 }
-.nfx-lumiere::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0)    0%,
-    rgba(255,255,255,.07) 20%,
-    rgba(255,255,255,.32) 50%,
-    rgba(255,255,255,.07) 80%,
-    rgba(255,255,255,0)   100%
-  );
+.sp-neon-glow {
+  position: absolute; top: 0; left: 0; right: 0;
+  color: rgba(79,140,255,.45); filter: blur(14px); opacity: 0;
 }
-/* helper positions — mirroring Netflix .helper-1 / .helper-2 structure */
-.nfx-lumiere-1 { width: 19.5%; left: 6%;  }
-.nfx-lumiere-2 { width: 15%;   left: 37%; transform: rotate(180deg); animation-delay: .65s; }
-.nfx-lumiere-3 { width: 12%;   left: 70%; animation-delay: .85s; }
-
-/* ===== Separator ===== */
-.nfx-div-line {
-  width: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79,140,255,.7) 20%, rgba(130,185,255,.9) 50%, rgba(79,140,255,.7) 80%, transparent);
-  margin: 12px auto 10px;
-  transition: width 0.8s cubic-bezier(0.22,1,.36,1);
+.sp-neon-edge {
+  position: absolute; top: 0; left: 0; right: 0;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(120,170,255,.5);
+  filter: blur(1.5px); opacity: 0;
 }
-.nfx-div-line.show { width: 200px; }
-
-/* ===== Shusikanri ===== */
-.nfx-below {
+.sp-neon-text {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  color: rgba(240,245,255,.98); opacity: 0;
 }
-.nfx-below.show { opacity: 1; transform: translateY(0); }
+.sp-neon-wrap {
+  position: relative; display: block; width: 100%; text-align: center;
+}
 
-.nfx-sub-halo {
-  position: absolute;
-  font-size: 30px; font-weight: 700;
-  letter-spacing: .35em; text-indent: .35em;
-  color: rgba(40,209,124,.4);
-  filter: blur(14px);
-  font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  white-space: nowrap;
-  pointer-events: none;
+.sp-neon-halo.on, .sp-neon-glow.on, .sp-neon-edge.on, .sp-neon-text.on {
+  animation: neonOn 2.8s ease-out forwards;
 }
-.nfx-sub-text {
-  font-size: 30px; font-weight: 700;
-  letter-spacing: .35em; text-indent: .35em;
+.sp-neon-halo.powerup  { animation: haloPowerUp .8s ease-out forwards, haloBreath 4s ease-in-out .8s infinite; }
+.sp-neon-glow.powerup  { animation: glowPowerUp .8s ease-out forwards, neonBreath 4s ease-in-out .8s infinite; }
+.sp-neon-edge.powerup  { animation: edgePowerUp .8s ease-out forwards, edgeBreath 4s ease-in-out .8s infinite; }
+.sp-neon-text.powerup  { animation: textPowerUp .8s ease-out forwards, neonBreath 4s ease-in-out .8s infinite; }
+
+/* Divider */
+.sp-divider-line {
+  height: 2px; width: 0;
+  background: linear-gradient(to right, transparent, rgba(79,140,255,.5) 20%, rgba(79,140,255,.8) 50%, rgba(79,140,255,.5) 80%, transparent);
+  margin: 12px auto 0;
+  transition: width 1s cubic-bezier(.22,1,.36,1);
+}
+.sp-divider-line.show { width: 200px; }
+
+/* 収支管理 — 3-layer neon */
+.sp-sub-wrap {
+  position: relative; display: block; width: 100%; text-align: center; margin-top: 14px;
+}
+.sp-sub-glow, .sp-sub-edge, .sp-sub-text {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: .3em; text-indent: .3em; display: block;
+  font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+}
+.sp-sub-glow {
+  position: absolute; top: 0; left: 0; right: 0;
+  color: rgba(40,209,124,.4); filter: blur(12px); opacity: 0;
+}
+.sp-sub-edge {
+  position: absolute; top: 0; left: 0; right: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(80,230,160,.5);
+  filter: blur(1px); opacity: 0;
+}
+.sp-sub-text {
+  position: relative; color: rgba(40,209,124,0);
+}
+.sp-sub-glow.show { opacity: 1; animation: subGlowBreath 3.5s ease-in-out infinite; }
+.sp-sub-edge.show { opacity: 1; }
+.sp-sub-text.show {
   color: rgba(180,255,220,.95);
-  text-shadow: 0 0 14px rgba(40,209,124,.7), 0 0 36px rgba(40,209,124,.3);
-  font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  white-space: nowrap;
+  text-shadow: 0 0 12px rgba(40,209,124,.5), 0 0 32px rgba(40,209,124,.2);
 }
+.sp-sub-glow.powerup { animation: subGlowPowerUp .8s ease-out forwards, subGlowBreath 3.5s ease-in-out .8s infinite; }
+.sp-sub-edge.powerup { animation: subEdgePowerUp .8s ease-out forwards; }
+.sp-sub-text.powerup { animation: subTextPowerUp .8s ease-out forwards; }
 
-/* ===== TAP hint ===== */
-.nfx-tap {
-  position: absolute; bottom: 28px;
-  font-size: 9px; letter-spacing: .28em;
-  color: rgba(159,176,208,.5);
-  font-family: 'DM Mono', monospace;
-  opacity: 0;
-  animation: nfxTapBlink 2s ease 4.8s both;
+/* ═══ Keyframes ═══ */
+@keyframes neonOn {
+  0%   { opacity: 0; text-shadow: none; }
+  4%   { opacity: .9; text-shadow: 0 0 14px rgba(79,140,255,.7), 0 0 36px rgba(79,140,255,.3); }
+  5.5% { opacity: .06; text-shadow: none; }
+  8%   { opacity: .85; text-shadow: 0 0 12px rgba(79,140,255,.6), 0 0 30px rgba(79,140,255,.25); }
+  9%   { opacity: .08; text-shadow: none; }
+  11%  { opacity: .92; text-shadow: 0 0 16px rgba(79,140,255,.7), 0 0 40px rgba(79,140,255,.35); }
+  12.5%{ opacity: .04; text-shadow: none; }
+  16%  { opacity: .7; text-shadow: 0 0 10px rgba(79,140,255,.5); }
+  17%  { opacity: .1; text-shadow: none; }
+  20%  { opacity: .95; text-shadow: 0 0 16px rgba(79,140,255,.7), 0 0 44px rgba(79,140,255,.35); }
+  21%  { opacity: .25; text-shadow: none; }
+  23%  { opacity: 1; text-shadow: 0 0 18px rgba(79,140,255,.8), 0 0 46px rgba(79,140,255,.35), 0 0 80px rgba(79,140,255,.15); }
+  30%  { opacity: .88; text-shadow: 0 0 12px rgba(79,140,255,.5), 0 0 32px rgba(79,140,255,.2); }
+  31%  { opacity: .12; text-shadow: none; }
+  33%  { opacity: 1; text-shadow: 0 0 20px rgba(79,140,255,.8), 0 0 50px rgba(79,140,255,.4), 0 0 90px rgba(79,140,255,.18); }
+  100% { opacity: 1; text-shadow: 0 0 20px rgba(79,140,255,.8), 0 0 50px rgba(79,140,255,.4), 0 0 90px rgba(79,140,255,.18); }
 }
-
-/* ===== Keyframes ===== */
-
-/* zoom-in: large to 1, ease-in — matches Netflix */
-@keyframes nfxZoomIn {
-  0%   { transform: scale(8); }
-  100% { transform: scale(1); }
+@keyframes neonBreath {
+  0%,100% { text-shadow: 0 0 16px rgba(79,140,255,.6), 0 0 38px rgba(79,140,255,.25), 0 0 70px rgba(79,140,255,.1); opacity: 1; }
+  40%     { text-shadow: 0 0 22px rgba(79,140,255,.85), 0 0 54px rgba(79,140,255,.42), 0 0 100px rgba(79,140,255,.2); opacity: 1; }
+  70%     { text-shadow: 0 0 18px rgba(79,140,255,.65), 0 0 42px rgba(79,140,255,.3), 0 0 76px rgba(79,140,255,.12); opacity: .95; }
 }
-
-/* fading-lumieres-box: light strip fades in then out during zoom */
-@keyframes nfxLumieresBox {
-  0%   { opacity: 0; }
-  6%   { opacity: .95; }
-  55%  { opacity: .55; }
-  90%  { opacity: .15; }
-  100% { opacity: 0; }
+@keyframes haloBreath  { 0%,100%{color:rgba(79,140,255,.22);opacity:1} 40%{color:rgba(79,140,255,.35);opacity:1} 70%{color:rgba(79,140,255,.18);opacity:.95} }
+@keyframes edgeBreath  { 0%,100%{-webkit-text-stroke-color:rgba(79,140,255,.7);opacity:1} 40%{-webkit-text-stroke-color:rgba(79,140,255,.9)} 70%{-webkit-text-stroke-color:rgba(79,140,255,.6);opacity:.95} }
+@keyframes textPowerUp {
+  0%  { text-shadow:0 0 20px rgba(79,140,255,.8),0 0 50px rgba(79,140,255,.4),0 0 90px rgba(79,140,255,.18); transform:scale(1); }
+  15% { text-shadow:0 0 36px rgba(79,140,255,1),0 0 72px rgba(79,140,255,.6),0 0 120px rgba(79,140,255,.3); transform:scale(1.04); color:rgba(255,255,255,1); }
+  100%{ text-shadow:0 0 20px rgba(79,140,255,.8),0 0 50px rgba(79,140,255,.4),0 0 90px rgba(79,140,255,.18); transform:scale(1); opacity:1; }
 }
-
-@keyframes nfxTapBlink {
-  0%   { opacity: 0; }
-  30%  { opacity: .55; }
-  70%  { opacity: .55; }
-  100% { opacity: 0; }
+@keyframes glowPowerUp  { 0%{opacity:1;color:rgba(79,140,255,.45)} 15%{opacity:1;color:rgba(79,140,255,.8)} 100%{opacity:1;color:rgba(79,140,255,.45)} }
+@keyframes haloPowerUp  { 0%{opacity:1;color:rgba(79,140,255,.22)} 15%{opacity:1;color:rgba(79,140,255,.55)} 100%{opacity:1;color:rgba(79,140,255,.22)} }
+@keyframes edgePowerUp  { 0%{-webkit-text-stroke-color:rgba(79,140,255,.7);filter:blur(1.5px)} 15%{-webkit-text-stroke-color:rgba(160,200,255,1);filter:blur(2.5px)} 100%{-webkit-text-stroke-color:rgba(79,140,255,.7);filter:blur(1.5px)} }
+@keyframes subGlowBreath { 0%,100%{color:rgba(40,209,124,.4);opacity:1} 50%{color:rgba(40,209,124,.6);opacity:1} }
+@keyframes subGlowPowerUp{ 0%{color:rgba(40,209,124,.4)} 15%{color:rgba(40,209,124,.9)} 100%{color:rgba(40,209,124,.4)} }
+@keyframes subEdgePowerUp{ 0%{-webkit-text-stroke-color:rgba(80,230,160,.5)} 15%{-webkit-text-stroke-color:rgba(120,255,190,1);filter:blur(2px)} 100%{-webkit-text-stroke-color:rgba(80,230,160,.5)} }
+@keyframes subTextPowerUp{
+  0%  { color:rgba(180,255,220,.95); text-shadow:0 0 12px rgba(40,209,124,.5),0 0 32px rgba(40,209,124,.2); transform:scale(1); }
+  15% { color:rgba(220,255,240,1);   text-shadow:0 0 30px rgba(40,209,124,.9),0 0 60px rgba(40,209,124,.5); transform:scale(1.05); }
+  100%{ color:rgba(180,255,220,.95); text-shadow:0 0 12px rgba(40,209,124,.5),0 0 32px rgba(40,209,124,.2); transform:scale(1); }
 }
 
   </style>
@@ -180,27 +167,22 @@
 <body class="navy-ui" style="background-color: #000;">
 
   <div id="splashScreen">
-    <div class="nfx-stage">
-      <!-- パチスロ: Netflix-style zoom container with lumieres -->
-      <div class="nfx-intro">
-        <div class="nfx-letter-block">
-          <!-- fading-lumieres-box helpers (like .helper-1 in Netflix code) -->
-          <div class="nfx-lumiere nfx-lumiere-1"></div>
-          <div class="nfx-lumiere nfx-lumiere-2"></div>
-          <div class="nfx-lumiere nfx-lumiere-3"></div>
-          <div class="nfx-pachislot-text">パチスロ</div>
-        </div>
-      </div>
+    <canvas id="splashCanvas"></canvas>
 
-      <!-- 収支管理: appears after zoom via JS -->
-      <div class="nfx-div-line" id="nfxDivLine"></div>
-      <div class="nfx-below" id="nfxBelow">
-        <div class="nfx-sub-halo">収支管理</div>
-        <div class="nfx-sub-text">収支管理</div>
+    <div class="sp-logo-wrap" id="spLogoWrap">
+      <div class="sp-neon-wrap">
+        <div class="sp-neon-halo" id="spNeonHalo">パチスロ</div>
+        <div class="sp-neon-glow" id="spNeonGlow">パチスロ</div>
+        <div class="sp-neon-edge" id="spNeonEdge">パチスロ</div>
+        <div class="sp-neon-text" id="spNeonText">パチスロ</div>
+      </div>
+      <div class="sp-divider-line" id="spDivLine"></div>
+      <div class="sp-sub-wrap">
+        <div class="sp-sub-glow" id="spSubGlow">収支管理</div>
+        <div class="sp-sub-edge" id="spSubEdge">収支管理</div>
+        <div class="sp-sub-text" id="spSubText">収支管理</div>
       </div>
     </div>
-
-    <div class="nfx-tap">TAP TO START</div>
   </div>
 
   <header class="topbar" style="opacity:0">

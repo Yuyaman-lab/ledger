@@ -1,39 +1,166 @@
 // ======================
-//  スプラッシュ画面制御（Netflix イントロ版）
-//  zoom-in(ease-in, 3.5s) + fading-lumieres-box helpers
+//  スプラッシュ画面制御
+//  Phase 1: ネオン点灯フリッカー
+//  Phase 2: 文字が粒子化して全方向にスプラッシュアウト
 // ======================
 (function(){
   const splash = document.getElementById("splashScreen");
   if (!splash) return;
 
+  var autoClose;
+
   function dismissSplash() {
     splash.classList.add("splash-fade");
-    setTimeout(() => { splash.style.display = "none"; }, 600);
+    setTimeout(function(){ splash.style.display = "none"; }, 650);
   }
 
-  // 4.1s: ズーム完了後（0.5s delay + 3.5s duration + 0.1s余裕）
-  //       セパレーターと「収支管理」を表示
-  setTimeout(function() {
-    var divLine = document.getElementById('nfxDivLine');
-    var below   = document.getElementById('nfxBelow');
-    if (divLine) divLine.classList.add('show');
-    setTimeout(function() {
-      if (below) below.classList.add('show');
-    }, 300);
-  }, 4100);
+  var el = function(id){ return document.getElementById(id); };
 
-  // 6.0s: 自動で閉じる
-  const autoClose = setTimeout(dismissSplash, 6000);
+  // ── Phase 1: ネオン点灯シーケンス ──
 
-  // 2.0s後からタップスキップ有効
-  setTimeout(function() {
+  // 0.8s: パチスロ ネオンフリッカー開始
+  setTimeout(function(){
+    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
+      el(id).classList.add('on');
+    });
+  }, 800);
+
+  // 2.0s: ディバイダー
+  setTimeout(function(){ el('spDivLine').classList.add('show'); }, 2000);
+
+  // 2.4s: 収支管理 点灯
+  setTimeout(function(){
+    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
+      el(id).classList.add('show');
+    });
+  }, 2400);
+
+  // 3.2s: パワーアップ（全体が一瞬強く光る）
+  setTimeout(function(){
+    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
+      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
+    });
+    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
+      el(id).classList.add('powerup');
+    });
+  }, 3200);
+
+  // 4.0s: パーティクル爆発 → スプラッシュアウト
+  setTimeout(function(){ startParticleExplosion(dismissSplash); }, 4000);
+
+  // 8s: フォールバック（パーティクルが終わらない場合）
+  autoClose = setTimeout(dismissSplash, 8000);
+
+  // 1.5s後からタップスキップ有効
+  setTimeout(function(){
     splash.style.cursor = "pointer";
-    splash.addEventListener("click", function onTap() {
+    splash.addEventListener("click", function onTap(){
       clearTimeout(autoClose);
       dismissSplash();
       splash.removeEventListener("click", onTap);
     }, { once: true });
-  }, 2000);
+  }, 1500);
+
+  // ── Phase 2: パーティクル爆発 ──
+  function startParticleExplosion(onDone) {
+    var canvas = document.getElementById('splashCanvas');
+    if (!canvas) { onDone(); return; }
+
+    var ctx = canvas.getContext('2d');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.display = 'block';
+
+    var W = canvas.width;
+    var H = canvas.height;
+    var cx = W / 2;
+    var cy = H / 2;
+
+    var particles = [];
+
+    // テキストをオフスクリーンキャンバスに描画し、ピクセル位置をサンプリング
+    function sampleText(text, fontSize, color, centerY) {
+      var off = document.createElement('canvas');
+      off.width  = W;
+      off.height = H;
+      var oc = off.getContext('2d');
+      oc.font = '900 ' + fontSize + 'px "Outfit","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
+      oc.fillStyle = '#fff';
+      oc.textAlign    = 'center';
+      oc.textBaseline = 'middle';
+      oc.fillText(text, cx, centerY);
+
+      var data = oc.getImageData(0, 0, W, H).data;
+      var step = 3; // sample every 3px
+
+      for (var y = 0; y < H; y += step) {
+        for (var x = 0; x < W; x += step) {
+          if (data[(y * W + x) * 4 + 3] > 100) {
+            var dx   = x - cx;
+            var dy   = y - cy;
+            var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            var spd  = 3 + Math.random() * 14;
+            particles.push({
+              x:     x,   y:     y,
+              vx:    (dx / dist) * spd + (Math.random() - 0.5) * 4,
+              vy:    (dy / dist) * spd + (Math.random() - 0.5) * 4,
+              alpha: 0.9 + Math.random() * 0.1,
+              decay: 0.009 + Math.random() * 0.014,
+              size:  1.5  + Math.random() * 2.5,
+              color: color
+            });
+          }
+        }
+      }
+    }
+
+    // 画面上の実際の文字位置を取得してサンプリング
+    var mainEl = el('spNeonText');
+    var subEl  = el('spSubText');
+    var mainCY = mainEl ? (mainEl.getBoundingClientRect().top + mainEl.getBoundingClientRect().height / 2) : cy - 50;
+    var subCY  = subEl  ? (subEl.getBoundingClientRect().top  + subEl.getBoundingClientRect().height  / 2) : cy + 50;
+
+    sampleText('パチスロ', 78, 'rgba(79,140,255,1)', mainCY);
+    sampleText('収支管理', 28, 'rgba(40,209,124,1)', subCY);
+
+    // HTMLテキストを即座に非表示
+    var logoWrap = el('spLogoWrap');
+    if (logoWrap) logoWrap.style.opacity = '0';
+
+    var startTime = null;
+    var maxDuration = 2000; // ms
+
+    function animate(ts) {
+      if (!startTime) startTime = ts;
+      ctx.clearRect(0, 0, W, H);
+
+      var alive = false;
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+        p.alpha -= p.decay;
+        if (p.alpha > 0) {
+          alive = true;
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle   = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      var elapsed = ts - startTime;
+      if (alive && elapsed < maxDuration) {
+        requestAnimationFrame(animate);
+      } else {
+        onDone();
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
 })();
 
 

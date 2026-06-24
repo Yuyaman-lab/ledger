@@ -17,136 +17,128 @@
     width: 100%; height: 100%;
     background-color: #000 !important;
     overflow: hidden;
-    font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', sans-serif;
   }
   #splashScreen {
     position: fixed; inset: 0; z-index: 99999;
     background: #000;
     display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
     transition: opacity 0.5s ease;
   }
   #splashScreen.splash-fade { opacity: 0 !important; pointer-events: none; }
 
-/* ===== Background atmosphere ===== */
-.nfx-bg-vignette {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(5,10,30,.15) 0%, rgba(0,0,0,.9) 100%);
-  pointer-events: none; z-index: 1;
-}
-.nfx-bg-grid {
-  position: absolute; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(rgba(79,140,255,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79,140,255,.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0;
-  animation: nfxGridFadeIn 1.2s ease 2.3s both;
-}
-
-/* Flash burst when zoom lands */
-.nfx-land-burst {
-  position: absolute; top: 50%; left: 50%;
-  width: 700px; height: 700px;
-  margin: -350px 0 0 -350px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(79,140,255,.45) 0%, rgba(79,140,255,.15) 30%, transparent 70%);
-  z-index: 2; opacity: 0;
-  animation: nfxLandBurst 1s ease-out 2.0s both;
-}
-
-/* ===== Main stage ===== */
+/* ===== Stage ===== */
 .nfx-stage {
-  position: relative; z-index: 10;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* ===== パチスロ -- Netflix zoom ===== */
-.nfx-main-wrap { position: relative; overflow: visible; }
-
-.nfx-main-halo {
-  position: absolute; top: 0; left: 0; right: 0;
-  font-size: 78px; font-weight: 900;
-  letter-spacing: .08em; text-indent: .08em; line-height: 1;
-  color: rgba(79,140,255,.45);
-  filter: blur(28px);
-  opacity: 0;
-  animation: nfxHaloIn 0.7s ease 2.05s both;
-  font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-}
-.nfx-main-edge {
-  position: absolute; top: 0; left: 0; right: 0;
-  font-size: 78px; font-weight: 900;
-  letter-spacing: .08em; text-indent: .08em; line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(120,175,255,.55);
-  filter: blur(2px);
-  opacity: 0;
-  animation: nfxHaloIn 0.5s ease 2.1s both;
-  font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-}
-.nfx-main-text {
+/* ===== .netflixintro equivalent =====
+   animation-name: zoom-in / delay: .5s / duration: 3.5s
+   timing-function: ease-in / fill-mode: forwards
+   ===================================== */
+.nfx-intro {
+  display: block;
   position: relative;
-  font-size: 78px; font-weight: 900;
-  letter-spacing: .08em; text-indent: .08em; line-height: 1;
-  color: rgba(240,245,255,.98);
+  animation: nfxZoomIn 3.5s ease-in 0.5s both;
+  transform-origin: center center;
+}
+
+/* ===== Letter block ([letter="N"] equivalent) =====
+   overflow:hidden clips the lumieres to the text bounds
+   transform-origin: 30% center — matches Netflix
+   ================================================== */
+.nfx-letter-block {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  transform-origin: 30% center;
+}
+
+/* パチスロ text */
+.nfx-pachislot-text {
+  display: block;
+  font-size: 76px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  line-height: 1;
+  color: rgba(200,220,255,.98);
   font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  animation: nfxZoomReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+  /* Subtle depth like the Netflix N surface */
+  text-shadow:
+    0 2px 0 rgba(20,50,160,.7),
+    0 -1px 0 rgba(180,210,255,.3),
+    0 0 30px rgba(79,140,255,.5);
+  padding: 2px 4px;
 }
-.nfx-main-text.glowing {
-  text-shadow: 0 0 20px rgba(79,140,255,.85), 0 0 50px rgba(79,140,255,.45), 0 0 90px rgba(79,140,255,.2);
-  animation: nfxGlowBreath 3.5s ease-in-out infinite;
+
+/* ===== Lumieres (fading-lumieres-box equivalent) =====
+   Diagonal light strips that reflect off the text surface.
+   Netflix: .helper-1 { width:19.5%; height:100%; left:22.4%;
+             transform:rotate(180deg); animation-name:fading-lumieres-box }
+   ===================================================== */
+.nfx-lumiere {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  animation: nfxLumieresBox 3.5s ease-in 0.5s both;
+  pointer-events: none;
 }
-.nfx-sheen {
-  position: absolute; top: -30%; left: -120%;
-  width: 90%; height: 160%;
+.nfx-lumiere::before {
+  content: '';
+  position: absolute; inset: 0;
   background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(255,255,255,.0) 35%,
-    rgba(255,255,255,.38) 50%,
-    rgba(255,255,255,.0) 65%,
-    transparent 100%
+    to bottom,
+    rgba(255,255,255,0)    0%,
+    rgba(255,255,255,.07) 20%,
+    rgba(255,255,255,.32) 50%,
+    rgba(255,255,255,.07) 80%,
+    rgba(255,255,255,0)   100%
   );
-  transform: skewX(-15deg);
-  opacity: 0; z-index: 20; pointer-events: none;
-  animation: nfxSheenSweep 0.65s ease-out 2.1s both;
 }
+/* helper positions — mirroring Netflix .helper-1 / .helper-2 structure */
+.nfx-lumiere-1 { width: 19.5%; left: 6%;  }
+.nfx-lumiere-2 { width: 15%;   left: 37%; transform: rotate(180deg); animation-delay: .65s; }
+.nfx-lumiere-3 { width: 12%;   left: 70%; animation-delay: .85s; }
 
 /* ===== Separator ===== */
-.nfx-sep {
+.nfx-div-line {
   width: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79,140,255,.7) 30%, rgba(100,170,255,.9) 50%, rgba(79,140,255,.7) 70%, transparent);
-  margin: 10px 0 8px;
-  animation: nfxSepExpand 0.7s cubic-bezier(0.22,1,.36,1) 2.7s both;
+  background: linear-gradient(90deg, transparent, rgba(79,140,255,.7) 20%, rgba(130,185,255,.9) 50%, rgba(79,140,255,.7) 80%, transparent);
+  margin: 12px auto 10px;
+  transition: width 0.8s cubic-bezier(0.22,1,.36,1);
 }
+.nfx-div-line.show { width: 200px; }
 
-/* ===== Shuushi kanri ===== */
-.nfx-sub-wrap {
+/* ===== Shusikanri ===== */
+.nfx-below {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   opacity: 0;
-  transform: translateY(14px);
-  animation: nfxSubReveal 0.65s cubic-bezier(0.22,1,.36,1) 2.9s both;
+  transform: translateY(10px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
+.nfx-below.show { opacity: 1; transform: translateY(0); }
+
 .nfx-sub-halo {
-  position: absolute; top: 0; left: 0; right: 0;
+  position: absolute;
   font-size: 30px; font-weight: 700;
   letter-spacing: .35em; text-indent: .35em;
   color: rgba(40,209,124,.4);
   filter: blur(14px);
   font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .nfx-sub-text {
-  position: relative;
   font-size: 30px; font-weight: 700;
   letter-spacing: .35em; text-indent: .35em;
   color: rgba(180,255,220,.95);
   text-shadow: 0 0 14px rgba(40,209,124,.7), 0 0 36px rgba(40,209,124,.3);
   font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  animation: nfxSubBreath 3.5s ease-in-out 3.6s infinite;
+  white-space: nowrap;
 }
 
 /* ===== TAP hint ===== */
@@ -156,50 +148,26 @@
   color: rgba(159,176,208,.5);
   font-family: 'DM Mono', monospace;
   opacity: 0;
-  animation: nfxTapBlink 2s ease 3.8s both;
+  animation: nfxTapBlink 2s ease 4.8s both;
 }
 
-/* Keyframes */
-@keyframes nfxZoomReveal {
-  0%   { transform: scale(7); opacity: 0; filter: blur(6px); }
-  18%  { opacity: 1; filter: blur(3px); }
-  80%  { filter: blur(0); }
-  100% { transform: scale(1); opacity: 1; filter: blur(0); }
+/* ===== Keyframes ===== */
+
+/* zoom-in: large to 1, ease-in — matches Netflix */
+@keyframes nfxZoomIn {
+  0%   { transform: scale(8); }
+  100% { transform: scale(1); }
 }
-@keyframes nfxHaloIn {
+
+/* fading-lumieres-box: light strip fades in then out during zoom */
+@keyframes nfxLumieresBox {
   0%   { opacity: 0; }
-  100% { opacity: 1; }
+  6%   { opacity: .95; }
+  55%  { opacity: .55; }
+  90%  { opacity: .15; }
+  100% { opacity: 0; }
 }
-@keyframes nfxGlowBreath {
-  0%,100% { text-shadow: 0 0 18px rgba(79,140,255,.8), 0 0 44px rgba(79,140,255,.4), 0 0 80px rgba(79,140,255,.18); }
-  50%     { text-shadow: 0 0 26px rgba(79,140,255,.95), 0 0 60px rgba(79,140,255,.55), 0 0 110px rgba(79,140,255,.28); }
-}
-@keyframes nfxSheenSweep {
-  0%   { left: -120%; opacity: 1; }
-  100% { left: 160%; opacity: 0.2; }
-}
-@keyframes nfxLandBurst {
-  0%  { transform: scale(0.4); opacity: 0; }
-  20% { opacity: 1; }
-  100%{ transform: scale(2.5); opacity: 0; }
-}
-@keyframes nfxGridFadeIn {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
-}
-@keyframes nfxSepExpand {
-  0%   { width: 0; opacity: 0; }
-  30%  { opacity: 1; }
-  100% { width: 210px; }
-}
-@keyframes nfxSubReveal {
-  0%   { opacity: 0; transform: translateY(14px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes nfxSubBreath {
-  0%,100% { text-shadow: 0 0 12px rgba(40,209,124,.6), 0 0 30px rgba(40,209,124,.25); }
-  50%     { text-shadow: 0 0 20px rgba(40,209,124,.85), 0 0 50px rgba(40,209,124,.4); }
-}
+
 @keyframes nfxTapBlink {
   0%   { opacity: 0; }
   30%  { opacity: .55; }
@@ -212,19 +180,21 @@
 <body class="navy-ui" style="background-color: #000;">
 
   <div id="splashScreen">
-    <div class="nfx-bg-grid"></div>
-    <div class="nfx-bg-vignette"></div>
-    <div class="nfx-land-burst"></div>
-
     <div class="nfx-stage">
-      <div class="nfx-main-wrap">
-        <div class="nfx-sheen"></div>
-        <div class="nfx-main-halo">パチスロ</div>
-        <div class="nfx-main-edge">パチスロ</div>
-        <div class="nfx-main-text" id="nfxMainText">パチスロ</div>
+      <!-- パチスロ: Netflix-style zoom container with lumieres -->
+      <div class="nfx-intro">
+        <div class="nfx-letter-block">
+          <!-- fading-lumieres-box helpers (like .helper-1 in Netflix code) -->
+          <div class="nfx-lumiere nfx-lumiere-1"></div>
+          <div class="nfx-lumiere nfx-lumiere-2"></div>
+          <div class="nfx-lumiere nfx-lumiere-3"></div>
+          <div class="nfx-pachislot-text">パチスロ</div>
+        </div>
       </div>
-      <div class="nfx-sep"></div>
-      <div class="nfx-sub-wrap">
+
+      <!-- 収支管理: appears after zoom via JS -->
+      <div class="nfx-div-line" id="nfxDivLine"></div>
+      <div class="nfx-below" id="nfxBelow">
         <div class="nfx-sub-halo">収支管理</div>
         <div class="nfx-sub-text">収支管理</div>
       </div>

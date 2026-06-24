@@ -1,5 +1,6 @@
 // ======================
 //  スプラッシュ画面制御（Netflix イントロ版）
+//  zoom-in(ease-in, 3.5s) + fading-lumieres-box helpers
 // ======================
 (function(){
   const splash = document.getElementById("splashScreen");
@@ -10,16 +11,21 @@
     setTimeout(() => { splash.style.display = "none"; }, 600);
   }
 
-  // 2.05s: ズーム完了後にネオングロー点灯
+  // 4.1s: ズーム完了後（0.5s delay + 3.5s duration + 0.1s余裕）
+  //       セパレーターと「収支管理」を表示
   setTimeout(function() {
-    var mt = document.getElementById('nfxMainText');
-    if (mt) mt.classList.add('glowing');
-  }, 2050);
+    var divLine = document.getElementById('nfxDivLine');
+    var below   = document.getElementById('nfxBelow');
+    if (divLine) divLine.classList.add('show');
+    setTimeout(function() {
+      if (below) below.classList.add('show');
+    }, 300);
+  }, 4100);
 
-  // 5.0s: 自動で閉じる
-  const autoClose = setTimeout(dismissSplash, 5000);
+  // 6.0s: 自動で閉じる
+  const autoClose = setTimeout(dismissSplash, 6000);
 
-  // 1.5s後からタップスキップ有効
+  // 2.0s後からタップスキップ有効
   setTimeout(function() {
     splash.style.cursor = "pointer";
     splash.addEventListener("click", function onTap() {
@@ -27,7 +33,7 @@
       dismissSplash();
       splash.removeEventListener("click", onTap);
     }, { once: true });
-  }, 1500);
+  }, 2000);
 })();
 
 

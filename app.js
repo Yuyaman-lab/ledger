@@ -1,70 +1,33 @@
 // ======================
-//  スプラッシュ画面制御（ネオンGOGO版）
+//  スプラッシュ画面制御（Netflix イントロ版）
 // ======================
 (function(){
   const splash = document.getElementById("splashScreen");
   if (!splash) return;
 
-  // スプラッシュを閉じる共通処理
   function dismissSplash() {
     splash.classList.add("splash-fade");
-    setTimeout(() => { splash.style.display = "none"; }, 650);
+    setTimeout(() => { splash.style.display = "none"; }, 600);
   }
 
-  // ── アニメーションシーケンス ──
-  var el = function(id) { return document.getElementById(id); };
+  // 2.05s: ズーム完了後にネオングロー点灯
+  setTimeout(function() {
+    var mt = document.getElementById('nfxMainText');
+    if (mt) mt.classList.add('glowing');
+  }, 2050);
 
-  // 0.5s: ENラベル
-  setTimeout(function(){ el('spEnLabel').classList.add('show'); }, 500);
+  // 5.0s: 自動で閉じる
+  const autoClose = setTimeout(dismissSplash, 5000);
 
-  // 0.8s: ネオンフリッカー開始
-  setTimeout(function(){
-    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
-      el(id).classList.add('on');
-    });
-  }, 800);
-
-  // 2.0s: ディバイダー
-  setTimeout(function(){ el('spDivLine').classList.add('show'); }, 2000);
-
-  // 2.4s: 「収支管理」
-  setTimeout(function(){
-    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      el(id).classList.add('show');
-    });
-  }, 2400);
-
-  // 2.7s: ダイヤモンド
-  setTimeout(function(){ el('spDiamonds').classList.add('show'); }, 2700);
-
-  // 3.0s: タグライン
-  setTimeout(function(){ el('spTagWrap').classList.add('show'); }, 3000);
-
-  // 3.5s: GOGO登場 + テキストパワーアップ
-  setTimeout(function(){
-    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
-      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
-    });
-    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      el(id).classList.add('powerup');
-    });
-  }, 3500);
-
-  // 3.8s: TAP TO START
-  setTimeout(function(){ el('spTapStart').classList.add('show'); }, 3800);
-
-  // 5.5s: 自動で閉じる（GOGO演出の余韻込み）
-  const autoClose = setTimeout(dismissSplash, 5500);
-
-  // 1.2秒後からタップスキップ有効
-  setTimeout(() => {
+  // 1.5s後からタップスキップ有効
+  setTimeout(function() {
     splash.style.cursor = "pointer";
     splash.addEventListener("click", function onTap() {
       clearTimeout(autoClose);
       dismissSplash();
       splash.removeEventListener("click", onTap);
     }, { once: true });
-  }, 1200);
+  }, 1500);
 })();
 
 

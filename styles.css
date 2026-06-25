@@ -64,7 +64,7 @@ html,body{
 .container{
   display:flex;
   flex-direction:column;
-  height:calc(100dvh - 52px - 70px); /* topbar 52px + bottom-nav 70px */
+  height:calc(100dvh - 52px - 84px); /* topbar 52px + bottom-nav 84px */
   padding:12px 12px 0;
   overflow:hidden;
 }
@@ -77,24 +77,24 @@ html,body{
   display:flex;
   background:rgba(10,15,35,.97);
   border-top:1px solid rgba(79,140,255,.18);
-  padding:8px 0 env(safe-area-inset-bottom,22px);
+  padding:10px 0 env(safe-area-inset-bottom,22px);
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
-  height:70px;
+  height:84px;
 }
 .bnav-item{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:pointer;padding:0;
+  gap:5px;cursor:pointer;padding:0;
   background:none;border:none;color:inherit;
   -webkit-tap-highlight-color:transparent;
 }
 .bnav-item svg{
-  width:22px;height:22px;display:block;
+  width:27px;height:27px;display:block;
   stroke:var(--muted);
   transition:stroke .15s;
 }
 .bnav-item .bnav-label{
-  font-size:10px;font-weight:600;color:var(--muted);
+  font-size:12px;font-weight:600;color:var(--muted);
   letter-spacing:.03em;font-family:var(--font-main);
   transition:color .15s;
 }
@@ -113,19 +113,19 @@ html,body{
   -webkit-tap-highlight-color:transparent;
 }
 .bnav-fab-icon{
-  width:44px;height:44px;border-radius:14px;
+  width:52px;height:52px;border-radius:16px;
   background:linear-gradient(135deg,rgba(79,140,255,.35),rgba(79,140,255,.18));
   border:1px solid rgba(79,140,255,.45);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 14px rgba(79,140,255,.3);
-  margin-top:-14px;
+  margin-top:-16px;
 }
 .bnav-fab-icon svg{
-  width:20px;height:20px;
+  width:24px;height:24px;
   stroke:rgba(79,140,255,.95);display:block;
 }
 .bnav-fab .bnav-label{
-  font-size:10px;font-weight:700;color:var(--primary);
+  font-size:12px;font-weight:700;color:var(--primary);
   letter-spacing:.03em;font-family:var(--font-main);
 }
 .bnav-fab:active .bnav-fab-icon{opacity:.7;}
@@ -161,19 +161,29 @@ html,body{
   flex-direction:column;
 }
 
+/* 中間の高さ（iPhone 13/14 標準 等）でわずかに詰めて全カードを収める */
+@media (max-height:880px){
+  #tab-summary .hero-card{padding:14px 24px 14px}
+  #tab-summary .hero-amount{margin-bottom:12px}
+  #tab-summary .hero-divider{margin-bottom:12px}
+  #tab-summary .year-graph{margin-bottom:8px;min-height:120px}
+  #tab-summary #yearCanvas{min-height:90px}
+  #tab-summary .panel-scroll{padding-bottom:12px}
+}
+
 /* 画面が低い端末（iPhone SE 等）では各要素をコンパクト化して全カードを収める */
 @media (max-height:740px){
-  .hero-card{padding:16px 18px 16px;margin-bottom:8px}
-  .hero-amount{font-size:44px;margin-bottom:12px}
-  .hero-head{margin-bottom:8px}
-  .hero-divider{margin-bottom:12px}
-  .meta-v{font-size:20px}
-  .year-graph{margin-bottom:8px;min-height:150px}
-  #yearCanvas{min-height:110px}
-  .mc{padding:14px 16px 12px}
-  .mc-month{font-size:20px}
-  .mc-profit{font-size:23px}
-  .mc-detail{font-size:14px}
+  #tab-summary .hero-card{padding:16px 18px 16px;margin-bottom:8px}
+  #tab-summary .hero-amount{font-size:44px;margin-bottom:12px}
+  #tab-summary .hero-head{margin-bottom:8px}
+  #tab-summary .hero-divider{margin-bottom:12px}
+  #tab-summary .meta-v{font-size:20px}
+  #tab-summary .year-graph{margin-bottom:8px;min-height:96px}
+  #tab-summary #yearCanvas{min-height:72px}
+  #tab-summary .mc{padding:14px 16px 12px}
+  #tab-summary .mc-month{font-size:20px}
+  #tab-summary .mc-profit{font-size:23px}
+  #tab-summary .mc-detail{font-size:15px}
 }
 
 /* ===== Card ===== */
@@ -259,7 +269,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   background:var(--card);
   border:1px solid rgba(79,140,255,.22);
   border-radius:var(--radius);
-  padding:26px 24px 24px;
+  padding:18px 24px 18px;
   margin-bottom:12px;
   position:relative;
   overflow:hidden;
@@ -282,26 +292,27 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .hero-head{
   display:flex;align-items:flex-start;justify-content:space-between;
-  gap:12px;margin-bottom:10px;
+  gap:12px;margin-bottom:8px;
 }
 .hero-label{
-  font-family:var(--font-mono);
-  font-size:12px;letter-spacing:.15em;
-  color:var(--muted);text-transform:uppercase;
+  font-family:var(--font-main);
+  font-size:18px;font-weight:700;
+  color:var(--text);opacity:.9;
   margin-bottom:8px;
 }
 .badge-stack{
-  display:flex;flex-direction:column;gap:6px;align-items:flex-end;
+  display:flex;flex-direction:column;gap:6px;align-items:stretch;
 }
 .prev-badge,.month-avg-badge{
   display:flex;align-items:center;justify-content:center;gap:4px;
   padding:6px 11px;border-radius:8px;
-  min-width:112px;box-sizing:border-box;
+  width:128px;box-sizing:border-box;
   font-family:var(--font-mono);
   font-size:12.5px;font-weight:500;letter-spacing:.02em;
   border:1px solid rgba(79,140,255,.2);
   background:rgba(79,140,255,.08);
   color:var(--text);white-space:nowrap;
+  text-align:center;
 }
 .prev-badge:empty,.month-avg-badge:empty{display:none}
 .prev-badge.up,.month-avg-badge.up{
@@ -318,7 +329,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   font-family:var(--font-main);
   font-size:58px;font-weight:800;
   letter-spacing:-.025em;line-height:1;
-  margin-bottom:20px;
+  margin-bottom:14px;
   white-space:nowrap;
 }
 .hero-amount.plus{color:var(--ok)}
@@ -351,7 +362,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   color:rgba(0,188,255,.9);
 }
 .hero-divider{
-  height:1px;background:var(--border);margin-bottom:20px;
+  height:1px;background:var(--border);margin-bottom:14px;
 }
 .hero-meta{
   display:flex;gap:0;
@@ -412,7 +423,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   flex:1 1 auto;
   display:flex;
   flex-direction:column;
-  min-height:190px;
+  min-height:150px;
 }
 .year-graph-header{
   display:flex;justify-content:space-between;align-items:center;
@@ -420,7 +431,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   flex-shrink:0;
 }
 .year-graph .yg-title{font-size:18px;font-weight:700;opacity:.9;font-family:var(--font-main)}
-#yearCanvas{display:block;width:100%;flex:1 1 auto;height:auto;min-height:150px;border-radius:6px}
+#yearCanvas{display:block;width:100%;flex:1 1 auto;height:auto;min-height:115px;border-radius:6px}
 
 /* ===================================================
    ▼▼▼  カルーセル  ▼▼▼
@@ -506,27 +517,30 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   display:flex;
   justify-content:space-between;
   align-items:baseline;
+  gap:8px;
   margin-bottom:10px;
 }
 .mc-month{
-  font-size:25px;
+  font-size:24px;
   font-weight:800;
   color:var(--text);
   letter-spacing:.02em;
   font-family:var(--font-main);
+  white-space:nowrap;
 }
 .mc-profit{
-  font-size:29px;
+  font-size:27px;
   font-weight:800;
   letter-spacing:-.01em;
   font-family:var(--font-main);
+  white-space:nowrap;
 }
 .mc-profit.plus{color:var(--ok)}
 .mc-profit.minus{color:var(--ng)}
 
 /* 詳細行 */
 .mc-detail{
-  font-size:16px;
+  font-size:18px;
   color:var(--muted);
   line-height:1.7;
   margin-bottom:12px;
@@ -547,11 +561,11 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   align-items:center;
 }
 .mc-footer-label{
-  font-size:16px;
+  font-size:18px;
   color:var(--muted);
 }
 .mc-footer-val{
-  font-size:19px;
+  font-size:21px;
   font-weight:700;
 }
 .mc-footer-val.plus{color:var(--ok)}

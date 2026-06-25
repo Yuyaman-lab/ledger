@@ -154,25 +154,26 @@ html,body{
 }
 .panel-scroll::-webkit-scrollbar{display:none}
 
-/* サマリー画面：全カードをファーストビューに収め、余白を均等配分 */
+/* サマリー画面：全カードをファーストビューに。カード間に余白を作らず、
+   年間グラフが残りスペースを吸収して画面全体を満たす */
 #tab-summary .panel-scroll{
   display:flex;
   flex-direction:column;
-  justify-content:space-between;
 }
 
 /* 画面が低い端末（iPhone SE 等）では各要素をコンパクト化して全カードを収める */
 @media (max-height:740px){
   .hero-card{padding:16px 18px 16px;margin-bottom:8px}
-  .hero-amount{font-size:42px;margin-bottom:12px}
+  .hero-amount{font-size:44px;margin-bottom:12px}
   .hero-head{margin-bottom:8px}
   .hero-divider{margin-bottom:12px}
-  .meta-v{font-size:18px}
-  #yearCanvas{height:110px}
-  .year-graph{padding:12px 14px 8px;margin-bottom:8px}
+  .meta-v{font-size:20px}
+  .year-graph{margin-bottom:8px;min-height:150px}
+  #yearCanvas{min-height:110px}
   .mc{padding:14px 16px 12px}
-  .mc-month{font-size:18px}
-  .mc-profit{font-size:21px}
+  .mc-month{font-size:20px}
+  .mc-profit{font-size:23px}
+  .mc-detail{font-size:14px}
 }
 
 /* ===== Card ===== */
@@ -258,7 +259,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   background:var(--card);
   border:1px solid rgba(79,140,255,.22);
   border-radius:var(--radius);
-  padding:24px 22px 22px;
+  padding:26px 24px 24px;
   margin-bottom:12px;
   position:relative;
   overflow:hidden;
@@ -285,19 +286,19 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .hero-label{
   font-family:var(--font-mono);
-  font-size:10px;letter-spacing:.15em;
+  font-size:12px;letter-spacing:.15em;
   color:var(--muted);text-transform:uppercase;
-  margin-bottom:7px;
+  margin-bottom:8px;
 }
 .badge-stack{
   display:flex;flex-direction:column;gap:6px;align-items:flex-end;
 }
 .prev-badge,.month-avg-badge{
-  display:flex;align-items:center;justify-content:center;gap:3px;
-  padding:5px 10px;border-radius:8px;
-  min-width:104px;box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  padding:6px 11px;border-radius:8px;
+  min-width:112px;box-sizing:border-box;
   font-family:var(--font-mono);
-  font-size:11.5px;font-weight:500;letter-spacing:.02em;
+  font-size:12.5px;font-weight:500;letter-spacing:.02em;
   border:1px solid rgba(79,140,255,.2);
   background:rgba(79,140,255,.08);
   color:var(--text);white-space:nowrap;
@@ -315,9 +316,9 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .hero-amount{
   font-family:var(--font-main);
-  font-size:52px;font-weight:800;
+  font-size:58px;font-weight:800;
   letter-spacing:-.025em;line-height:1;
-  margin-bottom:18px;
+  margin-bottom:20px;
   white-space:nowrap;
 }
 .hero-amount.plus{color:var(--ok)}
@@ -350,7 +351,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   color:rgba(0,188,255,.9);
 }
 .hero-divider{
-  height:1px;background:var(--border);margin-bottom:18px;
+  height:1px;background:var(--border);margin-bottom:20px;
 }
 .hero-meta{
   display:flex;gap:0;
@@ -366,21 +367,21 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .meta-k{
   font-family:var(--font-mono);
-  font-size:10px;letter-spacing:.12em;
+  font-size:12px;letter-spacing:.1em;
   color:var(--muted);text-transform:uppercase;
-  margin-bottom:7px;
+  margin-bottom:8px;
 }
 .meta-v{
   font-family:var(--font-main);
-  font-size:21px;font-weight:800;
+  font-size:25px;font-weight:800;
   letter-spacing:-.01em;line-height:1;
   color:var(--text);
 }
 .meta-v-sub{
   font-family:var(--font-mono);
-  font-size:11px;font-weight:400;
+  font-size:13px;font-weight:400;
   color:var(--muted);letter-spacing:.04em;
-  margin-top:4px;
+  margin-top:5px;
 }
 
 /* ===== Switch ===== */
@@ -407,18 +408,19 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   border-radius:18px;
   border:1px solid rgba(255,255,255,.12);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 10px 30px rgba(0,0,0,.4);
-  /* コンパクトに固定（伸長させない） */
-  flex:0 0 auto;
+  /* 残りの縦スペースを吸収してカード間の余白を埋める */
+  flex:1 1 auto;
   display:flex;
   flex-direction:column;
+  min-height:190px;
 }
 .year-graph-header{
   display:flex;justify-content:space-between;align-items:center;
   margin-bottom:10px;
   flex-shrink:0;
 }
-.year-graph .yg-title{font-size:15px;font-weight:700;opacity:.9;font-family:var(--font-main)}
-#yearCanvas{display:block;width:100%;height:150px;border-radius:6px}
+.year-graph .yg-title{font-size:18px;font-weight:700;opacity:.9;font-family:var(--font-main)}
+#yearCanvas{display:block;width:100%;flex:1 1 auto;height:auto;min-height:150px;border-radius:6px}
 
 /* ===================================================
    ▼▼▼  カルーセル  ▼▼▼
@@ -432,7 +434,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 
 .carousel-title{
   margin:0;
-  font-size:15px;font-weight:700;
+  font-size:18px;font-weight:700;
   color:var(--text);font-family:var(--font-main);
 }
 
@@ -485,7 +487,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
     inset 0 1px 0 rgba(255,255,255,.12),
     0 8px 32px rgba(0,0,0,.45);
 
-  padding:18px 18px 14px;
+  padding:20px 20px 16px;
   cursor:pointer;
   transition:transform .2s, box-shadow .2s;
 }
@@ -507,14 +509,14 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   margin-bottom:10px;
 }
 .mc-month{
-  font-size:21px;
+  font-size:25px;
   font-weight:800;
   color:var(--text);
   letter-spacing:.02em;
   font-family:var(--font-main);
 }
 .mc-profit{
-  font-size:24px;
+  font-size:29px;
   font-weight:800;
   letter-spacing:-.01em;
   font-family:var(--font-main);
@@ -524,10 +526,10 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 
 /* 詳細行 */
 .mc-detail{
-  font-size:14px;
+  font-size:16px;
   color:var(--muted);
   line-height:1.7;
-  margin-bottom:10px;
+  margin-bottom:12px;
   font-family:var(--font-main);
 }
 
@@ -545,11 +547,11 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   align-items:center;
 }
 .mc-footer-label{
-  font-size:14px;
+  font-size:16px;
   color:var(--muted);
 }
 .mc-footer-val{
-  font-size:17px;
+  font-size:19px;
   font-weight:700;
 }
 .mc-footer-val.plus{color:var(--ok)}

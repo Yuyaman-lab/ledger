@@ -199,8 +199,9 @@ html,body{
   border:1px solid var(--border);
   background:rgba(255,255,255,.04);
   color:var(--text);
-  padding:9px 12px;border-radius:12px;cursor:pointer;
-  font-size:13px;font-weight:600;font-family:var(--font-main);
+  padding:11px 16px;border-radius:12px;cursor:pointer;
+  font-size:15px;font-weight:600;font-family:var(--font-main);
+  white-space:nowrap;
 }
 .btn.primary{background:rgba(79,140,255,.25);border-color:rgba(79,140,255,.35)}
 .btn.danger{background:rgba(255,79,109,.16);border-color:rgba(255,79,109,.32)}
@@ -214,35 +215,36 @@ html,body{
 .gap{gap:10px}
 .form{display:grid;gap:10px}
 .input,.select{
-  width:100%;padding:12px 14px;
+  width:100%;padding:13px 15px;
   border-radius:12px;border:1px solid var(--border);
   background:rgba(0,0,0,.18);color:var(--text);
-  font-size:16px;line-height:1.4;font-family:var(--font-main);
-  height:48px;box-sizing:border-box;
+  font-size:18px;line-height:1.4;font-family:var(--font-main);
+  height:54px;box-sizing:border-box;
 }
 input[type="date"].input{
   -webkit-appearance:none;appearance:none;
-  min-height:48px;max-height:48px;
+  min-height:54px;max-height:54px;
 }
 .filters{display:flex;gap:8px;margin-bottom:10px}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
 .item{
   display:flex;justify-content:space-between;gap:12px;
-  padding:12px;border:1px solid var(--border);
+  padding:16px;border:1px solid var(--border);
   border-radius:var(--radius);background:rgba(255,255,255,.03);
 }
-.item .left{display:grid;gap:4px}
+.item .left{display:grid;gap:8px;min-width:0}
+.item .right{flex-shrink:0}
 .badge{
-  display:inline-block;padding:4px 10px;
+  display:inline-block;padding:6px 12px;
   border-radius:999px;border:1px solid var(--border);
-  font-size:11px;color:var(--muted);
+  font-size:14px;color:var(--muted);
   font-family:var(--font-main);letter-spacing:.02em;
 }
-.profit{font-weight:800;font-size:18px;white-space:nowrap;font-family:var(--font-main)}
+.profit{font-weight:800;font-size:24px;white-space:nowrap;font-family:var(--font-main)}
 .profit.plus{color:var(--ok)}
 .profit.minus{color:var(--ng)}
 .muted{color:var(--muted)}
-.small{font-size:12px;font-family:var(--font-main)}
+.small{font-size:15px;font-family:var(--font-main)}
 .empty{padding:14px}
 
 /* ===== Modal ===== */
@@ -253,6 +255,9 @@ input[type="date"].input{
   padding:14px;
 }
 .modal-body{width:min(520px,100%)}
+.modal-body h2{font-size:26px;font-weight:800;margin-bottom:4px}
+.modal-body .form{gap:12px}
+.modal-body .row.space .muted{font-size:17px}
 body.modal-open{position:fixed;width:100%;overflow:hidden}
 
 /* ===== Lock ===== */
@@ -262,7 +267,7 @@ body.modal-open{position:fixed;width:100%;overflow:hidden}
   padding:14px;background:rgba(0,0,0,.6);
 }
 .msg{margin-top:8px;color:var(--muted)}
-label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.04em}
+label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.04em}
 
 /* ===== ヒーロー集計カード ===== */
 .hero-card{

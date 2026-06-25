@@ -3,7 +3,7 @@
 // PWA起動時に白フラッシュを防ぐため、HTML/CSSをキャッシュから即座に返す
 // ======================
 
-const CACHE_NAME = 'slot-ledger-v17';
+const CACHE_NAME = 'slot-ledger-v18';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -29,12 +29,13 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// フェッチ：キャッシュファースト → ネットワークフォールバック
-// 成功したネットワーク応答でキャッシュを更新（Stale While Revalidate）
+// フェッチ：ネットワークファースト → キャッシュフォールバック
+// 起動のたびに最新版を取得し、取得できた場合はキャッシュも更新する。
+// オフライン時のみキャッシュを返す（更新が即座に反映されるのが狙い）。
 self.addEventListener('fetch', event => {
   const req = event.request;
 
-  // GETリクエストのみキャッシュ対象
+  // GETリクエストのみ対象
   if (req.method !== 'GET') return;
 
   // Google Fonts等の外部リソースはネットワークファースト
@@ -45,20 +46,17 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // コアファイル：キャッシュファースト + バックグラウンド更新
+  // コアファイル：ネットワークファースト + キャッシュ更新
   event.respondWith(
-    caches.match(req).then(cached => {
-      // バックグラウンドでキャッシュを更新
-      const fetchPromise = fetch(req).then(response => {
+    fetch(req)
+      .then(response => {
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
         return response;
-      }).catch(() => cached);
-
-      // キャッシュがあれば即座に返す（白フラッシュ防止の要）
-      return cached || fetchPromise;
-    })
+      })
+      // オフライン等でネットワークが失敗したらキャッシュにフォールバック
+      .catch(() => caches.match(req))
   );
 });

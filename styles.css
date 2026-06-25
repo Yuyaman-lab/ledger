@@ -154,6 +154,12 @@ html,body{
 }
 .panel-scroll::-webkit-scrollbar{display:none}
 
+/* サマリー画面：各セクションを縦に伸縮させ下部の余白を埋める */
+#tab-summary .panel-scroll{
+  display:flex;
+  flex-direction:column;
+}
+
 /* ===== Card ===== */
 .card{
   background:rgba(255,255,255,.03);
@@ -237,10 +243,11 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   background:var(--card);
   border:1px solid rgba(79,140,255,.22);
   border-radius:var(--radius);
-  padding:20px 20px 18px;
-  margin-bottom:10px;
+  padding:24px 22px 22px;
+  margin-bottom:12px;
   position:relative;
   overflow:hidden;
+  flex-shrink:0;
 }
 .hero-card::before{
   content:'';
@@ -259,26 +266,26 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .hero-top{
   display:flex;align-items:center;justify-content:space-between;
-  gap:12px;margin-bottom:14px;
+  gap:12px;margin-bottom:18px;
 }
 .hero-main{
   flex:1;min-width:0;
 }
 .hero-label{
   font-family:var(--font-mono);
-  font-size:9px;letter-spacing:.15em;
+  font-size:10px;letter-spacing:.15em;
   color:var(--muted);text-transform:uppercase;
-  margin-bottom:6px;
+  margin-bottom:7px;
 }
 .badge-stack{
   display:flex;flex-direction:column;gap:6px;align-items:flex-end;
 }
 .prev-badge,.month-avg-badge{
   display:flex;align-items:center;justify-content:center;gap:3px;
-  padding:4px 9px;border-radius:7px;
-  min-width:98px;box-sizing:border-box;
+  padding:5px 10px;border-radius:8px;
+  min-width:104px;box-sizing:border-box;
   font-family:var(--font-mono);
-  font-size:10.5px;font-weight:500;letter-spacing:.02em;
+  font-size:11.5px;font-weight:500;letter-spacing:.02em;
   border:1px solid rgba(79,140,255,.2);
   background:rgba(79,140,255,.08);
   color:var(--text);white-space:nowrap;
@@ -296,7 +303,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .hero-amount{
   font-family:var(--font-main);
-  font-size:44px;font-weight:800;
+  font-size:52px;font-weight:800;
   letter-spacing:-.025em;line-height:1;
   margin-bottom:0;
 }
@@ -330,7 +337,7 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
   color:rgba(0,188,255,.9);
 }
 .hero-divider{
-  height:1px;background:var(--border);margin-bottom:14px;
+  height:1px;background:var(--border);margin-bottom:18px;
 }
 .hero-meta{
   display:flex;gap:0;
@@ -346,21 +353,21 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .meta-k{
   font-family:var(--font-mono);
-  font-size:9px;letter-spacing:.12em;
+  font-size:10px;letter-spacing:.12em;
   color:var(--muted);text-transform:uppercase;
-  margin-bottom:5px;
+  margin-bottom:7px;
 }
 .meta-v{
   font-family:var(--font-main);
-  font-size:18px;font-weight:800;
+  font-size:21px;font-weight:800;
   letter-spacing:-.01em;line-height:1;
   color:var(--text);
 }
 .meta-v-sub{
   font-family:var(--font-mono);
-  font-size:10px;font-weight:400;
+  font-size:11px;font-weight:400;
   color:var(--muted);letter-spacing:.04em;
-  margin-top:3px;
+  margin-top:4px;
 }
 
 /* ===== Switch ===== */
@@ -380,20 +387,26 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 /* ===== 年間グラフカード ===== */
 .year-graph{
   margin-bottom:12px;
-  padding:14px 14px 10px;
+  padding:16px 16px 12px;
   background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
   border-radius:18px;
   border:1px solid rgba(255,255,255,.12);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 10px 30px rgba(0,0,0,.4);
+  /* 残りの縦スペースを吸収して下部の余白を埋める */
+  flex:1 0 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:210px;
 }
 .year-graph-header{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:8px;
+  margin-bottom:10px;
+  flex-shrink:0;
 }
-.year-graph .yg-title{font-size:13px;font-weight:700;opacity:.9;font-family:var(--font-main)}
-#yearCanvas{display:block;width:100%;height:180px;border-radius:6px}
+.year-graph .yg-title{font-size:15px;font-weight:700;opacity:.9;font-family:var(--font-main)}
+#yearCanvas{display:block;width:100%;flex:1 1 auto;height:auto;min-height:160px;border-radius:6px}
 
 /* ===================================================
    ▼▼▼  カルーセル  ▼▼▼
@@ -401,12 +414,13 @@ label{font-size:13px;color:var(--muted);font-family:var(--font-mono);letter-spac
 .carousel-section{
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
+  flex-shrink:0;
 }
 
 .carousel-title{
   margin:0;
-  font-size:13px;font-weight:700;
+  font-size:15px;font-weight:700;
   color:var(--text);font-family:var(--font-main);
 }
 

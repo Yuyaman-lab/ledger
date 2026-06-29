@@ -27,6 +27,12 @@ html,body{
   background:linear-gradient(180deg,var(--bg),#070b14);
   touch-action:manipulation;
 }
+/* topbar(可変高) + container(残り) を縦に積み、下部の固定ナビ分を確保。
+   topbar の高さに自動追従するためマジックナンバーに依存しない。 */
+body{
+  display:flex;flex-direction:column;
+  padding-bottom:84px; /* bottom-nav の高さ分を確保 */
+}
 
 /* ===== Topbar ===== */
 .topbar{
@@ -44,7 +50,7 @@ html,body{
   display:flex;flex-direction:column;align-items:center;gap:2px;
 }
 .topbar-title{
-  font-size:16px;font-weight:800;
+  font-size:20px;font-weight:800;
   font-family:var(--font-main);letter-spacing:.06em;
   color:#fff;
   text-shadow:
@@ -53,7 +59,7 @@ html,body{
     0 0 42px rgba(79,140,255,.25);
 }
 .topbar-sub{
-  font-size:8px;font-weight:500;letter-spacing:.22em;
+  font-size:10px;font-weight:500;letter-spacing:.22em;
   color:rgba(79,140,255,.8);
   font-family:var(--font-mono);
   text-transform:uppercase;
@@ -64,7 +70,8 @@ html,body{
 .container{
   display:flex;
   flex-direction:column;
-  height:calc(100dvh - 52px - 84px); /* topbar 52px + bottom-nav 84px */
+  flex:1;
+  min-height:0; /* flexの子がはみ出さないように */
   padding:12px 12px 0;
   overflow:hidden;
 }
@@ -89,12 +96,12 @@ html,body{
   -webkit-tap-highlight-color:transparent;
 }
 .bnav-item svg{
-  width:27px;height:27px;display:block;
+  width:30px;height:30px;display:block;
   stroke:var(--muted);
   transition:stroke .15s;
 }
 .bnav-item .bnav-label{
-  font-size:12px;font-weight:600;color:var(--muted);
+  font-size:13.5px;font-weight:600;color:var(--muted);
   letter-spacing:.03em;font-family:var(--font-main);
   transition:color .15s;
 }
@@ -113,7 +120,7 @@ html,body{
   -webkit-tap-highlight-color:transparent;
 }
 .bnav-fab-icon{
-  width:52px;height:52px;border-radius:16px;
+  width:56px;height:56px;border-radius:17px;
   background:linear-gradient(135deg,rgba(79,140,255,.35),rgba(79,140,255,.18));
   border:1px solid rgba(79,140,255,.45);
   display:flex;align-items:center;justify-content:center;
@@ -121,11 +128,11 @@ html,body{
   margin-top:-16px;
 }
 .bnav-fab-icon svg{
-  width:24px;height:24px;
+  width:27px;height:27px;
   stroke:rgba(79,140,255,.95);display:block;
 }
 .bnav-fab .bnav-label{
-  font-size:12px;font-weight:700;color:var(--primary);
+  font-size:13.5px;font-weight:700;color:var(--primary);
   letter-spacing:.03em;font-family:var(--font-main);
 }
 .bnav-fab:active .bnav-fab-icon{opacity:.7;}
@@ -235,16 +242,16 @@ input[type="date"].input{
 .item .left{display:grid;gap:8px;min-width:0}
 .item .right{flex-shrink:0}
 .badge{
-  display:inline-block;padding:6px 12px;
+  display:inline-block;padding:7px 13px;
   border-radius:999px;border:1px solid var(--border);
-  font-size:14px;color:var(--muted);
+  font-size:16px;color:var(--muted);
   font-family:var(--font-main);letter-spacing:.02em;
 }
-.profit{font-weight:800;font-size:24px;white-space:nowrap;font-family:var(--font-main)}
+.profit{font-weight:800;font-size:26px;white-space:nowrap;font-family:var(--font-main)}
 .profit.plus{color:var(--ok)}
 .profit.minus{color:var(--ng)}
 .muted{color:var(--muted)}
-.small{font-size:15px;font-family:var(--font-main)}
+.small{font-size:17px;font-family:var(--font-main)}
 .empty{padding:14px}
 
 /* ===== Modal ===== */
@@ -373,9 +380,9 @@ label{font-size:18px;color:var(--muted);font-family:var(--font-mono);letter-spac
   display:flex;gap:0;
 }
 .hero-meta-item{
-  flex:1;padding-right:12px;
+  flex:1;padding-right:8px;
   border-right:1px solid var(--border);
-  margin-right:12px;
+  margin-right:8px;
   text-align:center;
 }
 .hero-meta-item:last-child{
@@ -383,9 +390,10 @@ label{font-size:18px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .meta-k{
   font-family:var(--font-mono);
-  font-size:13px;letter-spacing:.1em;
+  font-size:13px;letter-spacing:.06em;
   color:var(--muted);text-transform:uppercase;
   margin-bottom:8px;
+  white-space:nowrap;
 }
 .meta-v{
   font-family:var(--font-main);

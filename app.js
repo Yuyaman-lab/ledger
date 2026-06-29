@@ -503,6 +503,33 @@ function renderSummary(){
 
   buildCarousel(orderedMonths, monthMap, currentKey);
   renderYearGraph();
+  requestAnimationFrame(fitHeroAmount);
+}
+
+// 総収支額をカード幅に合わせて自動縮小（桁数が増えてもバッジと収まるように）
+// CSS の基準サイズ（メディアクエリ含む）を上限に、はみ出す分だけ縮める。
+function fitHeroAmount(){
+  const el=$("statTotal");
+  if(!el) return;
+  const row=el.parentElement;            // .hero-amount-row
+  if(!row||!row.clientWidth) return;
+  el.style.fontSize="";                  // いったん CSS 基準サイズに戻す
+  const base=parseFloat(getComputedStyle(el).fontSize)||58;
+  const badges=row.querySelector(".badge-stack");
+  let badgeW=0;
+  if(badges){
+    const anyVisible=[...badges.children].some(c=>getComputedStyle(c).display!=="none");
+    if(anyVisible) badgeW=badges.getBoundingClientRect().width;
+  }
+  const rowStyle=getComputedStyle(row);
+  const gap=parseFloat(rowStyle.columnGap||rowStyle.gap)||0;
+  const avail=row.clientWidth - badgeW - (badgeW?gap:0);
+  if(avail<=0) return;
+  const natural=el.scrollWidth;          // 基準サイズでの実テキスト幅
+  if(natural>avail){
+    const size=Math.max(30, Math.floor(base*avail/natural*100)/100);
+    el.style.fontSize=size+"px";
+  }
 }
 
 // ======================
@@ -836,7 +863,7 @@ function bindUI(){
   };
 
   window.addEventListener("resize",()=>{
-    if(!$("tab-summary").classList.contains("hidden")) renderYearGraph();
+    if(!$("tab-summary").classList.contains("hidden")){ renderYearGraph(); fitHeroAmount(); }
   },{passive:true});
 }
 

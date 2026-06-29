@@ -164,7 +164,7 @@ html,body{
 /* 中間の高さ（iPhone 13/14 標準 等）でわずかに詰めて全カードを収める */
 @media (max-height:880px){
   #tab-summary .hero-card{padding:14px 24px 14px}
-  #tab-summary .hero-amount{margin-bottom:12px}
+  #tab-summary .hero-amount-row{margin-bottom:12px}
   #tab-summary .hero-divider{margin-bottom:12px}
   #tab-summary .year-graph{margin-bottom:8px;min-height:120px}
   #tab-summary #yearCanvas{min-height:90px}
@@ -174,16 +174,16 @@ html,body{
 /* 画面が低い端末（iPhone SE 等）では各要素をコンパクト化して全カードを収める */
 @media (max-height:740px){
   #tab-summary .hero-card{padding:16px 18px 16px;margin-bottom:8px}
-  #tab-summary .hero-amount{font-size:44px;margin-bottom:12px}
-  #tab-summary .hero-head{margin-bottom:8px}
+  #tab-summary .hero-amount{font-size:44px}
+  #tab-summary .hero-amount-row{margin-bottom:10px}
   #tab-summary .hero-divider{margin-bottom:12px}
-  #tab-summary .meta-v{font-size:20px}
+  #tab-summary .meta-v{font-size:22px}
   #tab-summary .year-graph{margin-bottom:8px;min-height:96px}
   #tab-summary #yearCanvas{min-height:72px}
   #tab-summary .mc{padding:14px 16px 12px}
-  #tab-summary .mc-month{font-size:20px}
-  #tab-summary .mc-profit{font-size:23px}
-  #tab-summary .mc-detail{font-size:15px}
+  #tab-summary .mc-month{font-size:22px}
+  #tab-summary .mc-profit{font-size:25px}
+  #tab-summary .mc-detail{font-size:16px}
 }
 
 /* ===== Card ===== */
@@ -215,15 +215,15 @@ html,body{
 .gap{gap:10px}
 .form{display:grid;gap:10px}
 .input,.select{
-  width:100%;padding:13px 15px;
+  width:100%;padding:14px 16px;
   border-radius:12px;border:1px solid var(--border);
   background:rgba(0,0,0,.18);color:var(--text);
-  font-size:18px;line-height:1.4;font-family:var(--font-main);
-  height:54px;box-sizing:border-box;
+  font-size:20px;line-height:1.4;font-family:var(--font-main);
+  height:58px;box-sizing:border-box;
 }
 input[type="date"].input{
   -webkit-appearance:none;appearance:none;
-  min-height:54px;max-height:54px;
+  min-height:58px;max-height:58px;
 }
 .filters{display:flex;gap:8px;margin-bottom:10px}
 .list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
@@ -255,9 +255,9 @@ input[type="date"].input{
   padding:14px;
 }
 .modal-body{width:min(520px,100%)}
-.modal-body h2{font-size:26px;font-weight:800;margin-bottom:4px}
+.modal-body h2{font-size:28px;font-weight:800;margin-bottom:4px}
 .modal-body .form{gap:12px}
-.modal-body .row.space .muted{font-size:17px}
+.modal-body .row.space .muted{font-size:19px}
 body.modal-open{position:fixed;width:100%;overflow:hidden}
 
 /* ===== Lock ===== */
@@ -267,7 +267,7 @@ body.modal-open{position:fixed;width:100%;overflow:hidden}
   padding:14px;background:rgba(0,0,0,.6);
 }
 .msg{margin-top:8px;color:var(--muted)}
-label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.04em}
+label{font-size:18px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.04em}
 
 /* ===== ヒーロー集計カード ===== */
 .hero-card{
@@ -295,25 +295,25 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   background:radial-gradient(circle,rgba(79,140,255,.07),transparent 70%);
   pointer-events:none;
 }
-.hero-head{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  gap:12px;margin-bottom:8px;
+.hero-amount-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;margin-bottom:16px;
 }
 .hero-label{
   font-family:var(--font-main);
-  font-size:18px;font-weight:700;
+  font-size:20px;font-weight:700;
   color:var(--text);opacity:.9;
-  margin-bottom:8px;
+  margin-bottom:10px;
 }
 .badge-stack{
   display:flex;flex-direction:column;gap:6px;align-items:stretch;
 }
 .prev-badge,.month-avg-badge{
   display:flex;align-items:center;justify-content:center;gap:4px;
-  padding:6px 11px;border-radius:8px;
-  width:128px;box-sizing:border-box;
+  padding:7px 12px;border-radius:8px;
+  width:120px;box-sizing:border-box;
   font-family:var(--font-mono);
-  font-size:12.5px;font-weight:500;letter-spacing:.02em;
+  font-size:14px;font-weight:500;letter-spacing:.02em;
   border:1px solid rgba(79,140,255,.2);
   background:rgba(79,140,255,.08);
   color:var(--text);white-space:nowrap;
@@ -334,7 +334,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   font-family:var(--font-main);
   font-size:58px;font-weight:800;
   letter-spacing:-.025em;line-height:1;
-  margin-bottom:14px;
+  margin-bottom:0;
   white-space:nowrap;
 }
 .hero-amount.plus{color:var(--ok)}
@@ -383,19 +383,19 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
 }
 .meta-k{
   font-family:var(--font-mono);
-  font-size:12px;letter-spacing:.1em;
+  font-size:13px;letter-spacing:.1em;
   color:var(--muted);text-transform:uppercase;
   margin-bottom:8px;
 }
 .meta-v{
   font-family:var(--font-main);
-  font-size:25px;font-weight:800;
+  font-size:28px;font-weight:800;
   letter-spacing:-.01em;line-height:1;
   color:var(--text);
 }
 .meta-v-sub{
   font-family:var(--font-mono);
-  font-size:13px;font-weight:400;
+  font-size:14px;font-weight:400;
   color:var(--muted);letter-spacing:.04em;
   margin-top:5px;
 }
@@ -435,7 +435,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   margin-bottom:10px;
   flex-shrink:0;
 }
-.year-graph .yg-title{font-size:18px;font-weight:700;opacity:.9;font-family:var(--font-main)}
+.year-graph .yg-title{font-size:20px;font-weight:700;opacity:.9;font-family:var(--font-main)}
 #yearCanvas{display:block;width:100%;flex:1 1 auto;height:auto;min-height:115px;border-radius:6px}
 
 /* ===================================================
@@ -450,7 +450,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
 
 .carousel-title{
   margin:0;
-  font-size:18px;font-weight:700;
+  font-size:20px;font-weight:700;
   color:var(--text);font-family:var(--font-main);
 }
 
@@ -526,7 +526,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   margin-bottom:10px;
 }
 .mc-month{
-  font-size:24px;
+  font-size:26px;
   font-weight:800;
   color:var(--text);
   letter-spacing:.02em;
@@ -534,7 +534,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   white-space:nowrap;
 }
 .mc-profit{
-  font-size:27px;
+  font-size:29px;
   font-weight:800;
   letter-spacing:-.01em;
   font-family:var(--font-main);
@@ -545,7 +545,7 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
 
 /* 詳細行 */
 .mc-detail{
-  font-size:18px;
+  font-size:20px;
   color:var(--muted);
   line-height:1.7;
   margin-bottom:12px;
@@ -566,11 +566,11 @@ label{font-size:16px;color:var(--muted);font-family:var(--font-mono);letter-spac
   align-items:center;
 }
 .mc-footer-label{
-  font-size:18px;
+  font-size:20px;
   color:var(--muted);
 }
 .mc-footer-val{
-  font-size:21px;
+  font-size:23px;
   font-weight:700;
 }
 .mc-footer-val.plus{color:var(--ok)}

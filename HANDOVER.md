@@ -178,13 +178,13 @@ body{ display:flex; flex-direction:column; padding-bottom:84px; } /* 84px = 固�
 
 > **必ず守るルール**：`index.html` / `styles.css` / `app.js` のいずれかを変更したら、**`sw.js` の `CACHE_NAME` を必ずインクリメントする**（現在 `slot-ledger-v25`）。忘れると古いキャッシュが残る。
 
-### 7.3 既知の問題：manifest が 404
+### 7.3 manifest の 404（修正済み・v26）
 
-`index.html:7` は `manifest.webmanifest` を参照しているが、実ファイルは **`manifest.webmanifest.txt`**（拡張子が `.txt` のまま）。そのため**マニフェストは常に404**になっている。
+以前は `index.html:7` が `manifest.webmanifest` を参照しているのに実ファイルが **`manifest.webmanifest.txt`**（拡張子が `.txt` のまま）で、**マニフェストが常に404**だった。PWAのインストール名・テーマカラーが効かない状態。
 
-- 影響：PWAとしてのインストール名・テーマカラー・アイコンが効かない（現状はブラウザ既定で動作）
-- 対処：ファイル名を `manifest.webmanifest` にリネームするだけ。新アプリでは最初から正しい名前で置くこと。
-- 併せて `icons: []` が空なのでホーム画面アイコンも未設定。家計簿アプリではアイコンを用意する。
+- **対処済み**：正しい名前へリネームし、Service Worker の `CORE_ASSETS` にも追加（オフライン時も配信される）。実測で `GET /manifest.webmanifest => 200` を確認。
+- 新アプリでは最初から正しい拡張子で置くこと。**`.txt` が付いていると静的ホスティングでは黙って404になり、コンソールを見るまで気づけない。**
+- なお `icons: []` は空のままなのでホーム画面アイコンは未設定。家計簿アプリではアイコン画像を用意すること。
 
 ---
 
@@ -202,7 +202,7 @@ body{ display:flex; flex-direction:column; padding-bottom:84px; } /* 84px = 固�
 | 8 | カルーセル | 月別カード。カテゴリ別内訳の表示に拡張すると価値が高い | 中 |
 | 9 | CSV出力 | 列定義を変更（app.js:766） | 小 |
 | 10 | 文言・スプラッシュ | 「パチスロ収支表」→ 新名称 | 小 |
-| 11 | manifest | 正しい拡張子 + アイコン設定 | 小 |
+| 11 | manifest | 名称・テーマカラー変更 + アイコン設定（拡張子は修正済み） | 小 |
 
 **新規に欲しくなる機能**（本アプリにない）：カテゴリ別集計・円グラフ、予算設定と超過アラート、固定費の繰り返し登録、月またぎの繰越表示。
 
@@ -270,7 +270,7 @@ caches.keys().then(ks=>ks.forEach(k=>caches.delete(k)));
 
 ## 11. 現状の未対応事項
 
-- [ ] `manifest.webmanifest.txt` のリネーム（404のまま）
+- [x] ~~`manifest.webmanifest.txt` のリネーム（404）~~ → v26 で修正済み
 - [ ] PWAアイコン未設定（`icons: []`）
 - [ ] 年間グラフのY軸が固定値（データに応じた自動スケールなし）
 - [ ] `.playwright-mcp/` や検証用スクリーンショット（`verify-*.png`）が未整理

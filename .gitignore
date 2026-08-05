@@ -1,0 +1,19 @@
+# 収支データのバックアップ（個人情報。絶対にコミットしない）
+*.backup.json
+slot_ledger_backup*.json
+slot_ledger*.csv
+
+# 検証用スクリーンショット・ブラウザ自動操作の生成物
+verify-*.png
+*.playwright-mcp/
+.playwright-mcp/
+baseline_test/
+
+# エディタ・OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# ローカル作業用
+.claude/worktrees/
+node_modules/

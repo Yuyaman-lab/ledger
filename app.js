@@ -292,8 +292,8 @@ function renderFilters(){
   const years=[...yearsSet].sort().reverse();
   const months=[...monthsSet].sort().reverse();
   const fy=$("filterYear"), fm=$("filterMonth");
-  fy.innerHTML=`<option value="all">全ての年</option>`+years.map(y=>`<option value="${y}">${y}年</option>`).join("");
-  fm.innerHTML=`<option value="all">全ての月</option>`+months.map(m=>`<option value="${m}">${m}</option>`).join("");
+  fy.innerHTML=`<option value="all">全ての年</option>`+years.map(y=>`<option value="${escapeHtml(y)}">${escapeHtml(y)}年</option>`).join("");
+  fm.innerHTML=`<option value="all">全ての月</option>`+months.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
   if(filterY!=="all"&&!yearsSet.has(filterY)) filterY="all";
   if(filterM!=="all"&&!monthsSet.has(filterM)) filterM="all";
   fy.value=filterY; fm.value=filterM;
@@ -314,7 +314,7 @@ function renderLedger(){
     li.innerHTML=`
       <div class="left">
         <div class="row gap">
-          <span class="badge">${e.date.replaceAll("-","/")}</span>
+          <span class="badge">${escapeHtml(e.date).replaceAll("-","/")}</span>
           ${e.memo?`<span class="badge">📝 ${escapeHtml(e.memo)}</span>`:""}
         </div>
         <div class="muted small">投資 ${fmtYen(e.investment)} / 回収 ${fmtYen(e.payout)}</div>
@@ -335,8 +335,10 @@ function renderLedger(){
   }
 }
 
+// HTML特殊文字をエスケープ。文字列以外（復元JSON由来の数値・オブジェクト等）が
+// 渡されても落ちないよう、必ず文字列化してから処理する。
 function escapeHtml(str){
-  return str.replace(/[&<>"']/g,m=>({
+  return String(str ?? "").replace(/[&<>"']/g,m=>({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[m]));
 }
@@ -556,7 +558,7 @@ function buildCarousel(months, monthMap, currentKey){
     if(!data){
       card.innerHTML=`
         <div class="mc-top">
-          <span class="mc-month">${monthKey.replace("-","/")}</span>
+          <span class="mc-month">${escapeHtml(monthKey).replace("-","/")}</span>
           <span class="mc-profit muted" style="font-size:14px;">データなし</span>
         </div>
         <div class="mc-detail">まだ今月のデータはありません。<br>「＋追加」から入力してください。</div>`;
@@ -567,7 +569,7 @@ function buildCarousel(months, monthMap, currentKey){
       const sign=p>=0?"+":"";
       card.innerHTML=`
         <div class="mc-top">
-          <span class="mc-month">${monthKey.replace("-","/")}</span>
+          <span class="mc-month">${escapeHtml(monthKey).replace("-","/")}</span>
           <span class="mc-profit ${cls}">${sign}${p.toLocaleString("ja-JP")}円</span>
         </div>
         <div class="mc-detail">
@@ -780,15 +782,35 @@ function backupJSON(){
   const a=document.createElement("a"); a.href=url; a.download="slot_ledger_backup.json"; a.click();
   URL.revokeObjectURL(url);
 }
+// YYYY-MM-DD 形式かつ実在する日付のみ許可する。
+// 形式チェックだけだと 2026-13-99 のような存在しない日付が通ってしまうため、
+// 実際に Date で往復させて一致を確認する。
+function isValidISODate(v){
+  if(typeof v!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d=new Date(`${v}T00:00:00Z`);
+  return !isNaN(d.getTime()) && d.toISOString().slice(0,10)===v;
+}
+
+// 復元は外部ファイル由来＝信頼できない入力。各項目を必ず検証・正規化してから保存する。
+// 特に date は画面へそのまま描画されるため、形式が合わないレコードは取り込まない。
 async function restoreJSON(file){
   const data=JSON.parse(await file.text());
   if(!Array.isArray(data)) throw new Error("形式が違います");
+  let skipped=0;
   for(const e of data){
-    if(!e.id) e.id=uid(); if(!e.date) continue;
-    e.investment=Number(e.investment||0); e.payout=Number(e.payout||0); e.memo=String(e.memo||"");
-    await putEntry(e);
+    if(typeof e!=="object"||e===null){ skipped++; continue; }
+    if(!isValidISODate(e.date)){ skipped++; continue; }
+    const investment=Number(e.investment||0), payout=Number(e.payout||0);
+    if(!Number.isFinite(investment)||!Number.isFinite(payout)){ skipped++; continue; }
+    await putEntry({
+      id: typeof e.id==="string"&&e.id ? e.id : uid(),
+      date: e.date,
+      investment, payout,
+      memo: String(e.memo??"").slice(0,500),
+    });
   }
   await loadAndRender();
+  if(skipped>0) alert(`${skipped}件は形式が正しくないため取り込みませんでした。`);
 }
 
 // ======================

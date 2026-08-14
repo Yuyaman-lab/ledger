@@ -1,160 +1,580 @@
-// ======================
+// ==========================================================
 //  スプラッシュ画面制御
-//  Phase 1: ネオン点灯フリッカー
-//  Phase 2: 文字が粒子化して全方向にスプラッシュアウト
-// ======================
+//  Phase 1  スラムイン ... 巨大な「パチスロ」が奥から叩きつけられる
+//  Phase 2  ネオン点灯 ... 衝撃 → フラッシュ → 振動 → フリッカー点灯
+//  Phase 3  チャージ   ... 集中線が加速し、青から金へ発色（激アツ）
+//  Phase 4  静寂       ... 一瞬の暗転で溜めを作る
+//  Phase 5  爆発       ... 大フラッシュ・三重の衝撃波・文字の粒子化
+// ==========================================================
 (function(){
-  const splash = document.getElementById("splashScreen");
+  var splash = document.getElementById("splashScreen");
   if (!splash) return;
 
-  var autoClose;
+  var el      = function(id){ return document.getElementById(id); };
+  var shakeEl = el("splashShake");
+  var flashEl = el("splashFlash");
+  var logoEl  = el("spLogoWrap");
 
-  function dismissSplash() {
+  var MAIN_LAYERS = ["spNeonHalo","spNeonGlow","spNeonEdge","spNeonText"];
+  var SUB_LAYERS  = ["spSubGlow","spSubEdge","spSubText"];
+
+  var reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  var timers  = [];
+  var done    = false;
+  var bg      = createBackdrop(el("splashBg"), reduced);
+
+  function at(ms, fn){ timers.push(setTimeout(fn, ms)); }
+  function clearAll(){ for (var i=0;i<timers.length;i++) clearTimeout(timers[i]); timers = []; }
+
+  function dismissSplash(){
+    if (done) return;
+    done = true;
+    clearAll();
+    bg.stop();
     splash.classList.add("splash-fade");
     setTimeout(function(){ splash.style.display = "none"; }, 650);
   }
 
-  var el = function(id){ return document.getElementById(id); };
+  // クラスを付け直してアニメーションを再生させる
+  function replay(node, cls){
+    if (!node) return;
+    node.classList.remove(cls);
+    void node.offsetWidth; // reflow
+    node.classList.add(cls);
+  }
+  function shake(kind){
+    if (reduced || !shakeEl) return;
+    shakeEl.classList.remove("shake-sm","shake-lg","shake-mega");
+    void shakeEl.offsetWidth;
+    shakeEl.classList.add(kind);
+  }
+  function flash(kind){
+    if (reduced || !flashEl) return;
+    flashEl.classList.remove("flash-main","flash-sub","flash-mega");
+    void flashEl.offsetWidth;
+    flashEl.classList.add(kind);
+  }
+  function addClassTo(ids, cls){
+    for (var i=0;i<ids.length;i++){ var n = el(ids[i]); if (n) n.classList.add(cls); }
+  }
+  function swapClass(ids, from, to){
+    for (var i=0;i<ids.length;i++){
+      var n = el(ids[i]); if (!n) continue;
+      n.classList.remove(from); n.classList.add(to);
+    }
+  }
 
-  // ── Phase 1: ネオン点灯シーケンス ──
+  // ── 動きを減らす設定：演出なしで静かに見せる ──
+  if (reduced) {
+    addClassTo(MAIN_LAYERS.concat(SUB_LAYERS), "on");
+    var dl = el("spDivLine"); if (dl) dl.classList.add("show");
+    at(1400, dismissSplash);
+    enableSkip(200);
+    return;
+  }
 
-  // 0.8s: パチスロ・収支管理 同時にネオンフリッカー開始
-  setTimeout(function(){
-    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText',
-     'spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      el(id).classList.add('on');
+  // ── タイムライン ──
+  bg.start();
+
+  // 0.28s  スラムイン開始（着弾は 0.9s × 62% ≒ 0.56s 後）
+  at(280, function(){
+    replay(el("spMainSlam"), "slam");
+    addClassTo(MAIN_LAYERS, "on");
+  });
+
+  // 0.84s  第一撃：フラッシュ・振動・衝撃波・火花
+  at(840, function(){
+    flash("flash-main");
+    shake("shake-lg");
+    bg.ring({ speed: 15, width: 16, alpha: .95 });
+    bg.ring({ speed: 9,  width: 7,  alpha: .55, delay: 90 });
+    bg.sparks(90, { speed: 16, spread: 1 });
+    bg.level({ intensity: .55, spin: .55 });
+  });
+
+  // 1.08s  区切り線
+  at(1080, function(){ var d = el("spDivLine"); if (d) d.classList.add("show"); });
+
+  // 1.20s  サブタイトルのスラムイン
+  at(1200, function(){
+    replay(el("spSubSlam"), "slam");
+    addClassTo(SUB_LAYERS, "on");
+  });
+
+  // 1.64s  第二撃
+  at(1640, function(){
+    flash("flash-sub");
+    shake("shake-sm");
+    bg.ring({ speed: 10, width: 9, alpha: .6, mix: -1 });
+    bg.sparks(45, { speed: 11, spread: 1 });
+    bg.level({ intensity: .62, spin: .7 });
+  });
+
+  // 2.00s  チャージ：集中線が加速し、青 → 金へ
+  at(2000, function(){
+    if (logoEl) logoEl.classList.add("charge");
+    swapClass(MAIN_LAYERS, "on", "charge-lit");
+    swapClass(SUB_LAYERS,  "on", "charge-lit");
+    var d = el("spDivLine"); if (d) d.classList.add("charge-lit");
+    bg.charge(1000);
+  });
+
+  // 3.00s  静寂（溜め）
+  at(3000, function(){
+    if (shakeEl){
+      shakeEl.style.transition = "opacity .16s ease-out, filter .16s ease-out";
+      shakeEl.style.opacity    = ".12";
+      shakeEl.style.filter     = "brightness(.35)";
+    }
+    bg.hush();
+  });
+
+  // 3.17s  爆発
+  at(3170, function(){
+    if (shakeEl){
+      shakeEl.style.transition = "none";
+      shakeEl.style.opacity    = "1";
+      shakeEl.style.filter     = "none";
+    }
+    explode();
+  });
+
+  // 保険：何かで演出が止まっても必ず閉じる
+  at(7500, dismissSplash);
+
+  enableSkip(700);
+
+  // 0.7s 以降はタップでスキップ
+  function enableSkip(delay){
+    at(delay, function(){
+      splash.style.cursor = "pointer";
+      splash.addEventListener("click", dismissSplash, { once: true });
     });
-    el('spDivLine').classList.add('show');
-  }, 800);
+  }
 
-  // 3.2s: パワーアップ（全体が一瞬強く光る）
-  setTimeout(function(){
-    ['spNeonHalo','spNeonGlow','spNeonEdge','spNeonText'].forEach(function(id){
-      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
-    });
-    ['spSubGlow','spSubEdge','spSubText'].forEach(function(id){
-      var e = el(id); e.classList.remove('on'); e.classList.add('powerup');
-    });
-  }, 3200);
+  // ── Phase 5: 爆発 ──
+  function explode(){
+    // 粒子の元になる文字位置は、揺れが始まる前に採取する
+    var particles = buildParticles();
 
-  // 4.0s: パーティクル爆発 → スプラッシュアウト
-  setTimeout(function(){ startParticleExplosion(dismissSplash); }, 4000);
+    flash("flash-mega");
+    shake("shake-mega");
+    bg.bang();
 
-  // 8s: フォールバック（パーティクルが終わらない場合）
-  autoClose = setTimeout(dismissSplash, 8000);
+    if (logoEl) logoEl.classList.add("blown");
 
-  // 1.5s後からタップスキップ有効
-  setTimeout(function(){
-    splash.style.cursor = "pointer";
-    splash.addEventListener("click", function onTap(){
-      clearTimeout(autoClose);
-      dismissSplash();
-      splash.removeEventListener("click", onTap);
-    }, { once: true });
-  }, 1500);
+    if (!particles) { at(700, dismissSplash); return; }
+    runParticles(particles, function(){ dismissSplash(); });
+  }
 
-  // ── Phase 2: パーティクル爆発 ──
-  function startParticleExplosion(onDone) {
-    var canvas = document.getElementById('splashCanvas');
-    if (!canvas) { onDone(); return; }
+  // 画面上の文字をオフスクリーンに描いてピクセル位置をサンプリングする
+  function buildParticles(){
+    var canvas = el("splashCanvas");
+    if (!canvas) return null;
 
-    var ctx = canvas.getContext('2d');
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.display = 'block';
+    var W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = "block";
 
-    var W = canvas.width;
-    var H = canvas.height;
-    var cx = W / 2;
-    var cy = H / 2;
+    var cx = W / 2, cy = H * 0.46;
+    var list = [];
 
-    var particles = [];
+    var off = document.createElement("canvas");
+    off.width = W; off.height = H;
+    var oc = off.getContext("2d", { willReadFrequently: true });
 
-    // テキストをオフスクリーンキャンバスに描画し、ピクセル位置をサンプリング
-    function sampleText(text, fontSize, color, centerY) {
-      var off = document.createElement('canvas');
-      off.width  = W;
-      off.height = H;
-      var oc = off.getContext('2d');
-      oc.font = '900 ' + fontSize + 'px "Outfit","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
-      oc.fillStyle = '#fff';
-      oc.textAlign    = 'center';
-      oc.textBaseline = 'middle';
-      oc.fillText(text, cx, centerY);
+    function sample(node, text, color, weight, step){
+      if (!node) return;
+      var cs   = window.getComputedStyle(node);
+      var size = parseFloat(cs.fontSize) || 64;
+      var rect = node.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+
+      oc.clearRect(0, 0, W, H);
+      if ("letterSpacing" in oc) oc.letterSpacing = cs.letterSpacing;
+      oc.font = weight + " " + size + 'px "Outfit","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
+      oc.fillStyle    = "#fff";
+      oc.textAlign    = "center";
+      oc.textBaseline = "middle";
+      oc.fillText(text, cx, midY);
 
       var data = oc.getImageData(0, 0, W, H).data;
-      var step = 3; // sample every 3px
-
-      for (var y = 0; y < H; y += step) {
-        for (var x = 0; x < W; x += step) {
-          if (data[(y * W + x) * 4 + 3] > 100) {
-            var dx   = x - cx;
-            var dy   = y - cy;
-            var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-            var spd  = 3 + Math.random() * 14;
-            particles.push({
-              x:     x,   y:     y,
-              vx:    (dx / dist) * spd + (Math.random() - 0.5) * 4,
-              vy:    (dy / dist) * spd + (Math.random() - 0.5) * 4,
-              alpha: 0.9 + Math.random() * 0.1,
-              decay: 0.009 + Math.random() * 0.014,
-              size:  1.5  + Math.random() * 2.5,
-              color: color
-            });
-          }
+      for (var y = 0; y < H; y += step){
+        for (var x = 0; x < W; x += step){
+          if (data[(y * W + x) * 4 + 3] < 110) continue;
+          var dx = x - cx, dy = y - cy;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          var ux = dx / dist, uy = dy / dist;
+          // 距離が遠い粒子ほど速く飛ぶ（外側が先に散る）
+          var spd   = (5 + dist / 26) * (0.65 + Math.random() * 0.85);
+          var swirl = (Math.random() - 0.5) * 5;
+          list.push({
+            x: x, y: y,
+            vx: ux * spd - uy * swirl + (Math.random() - 0.5) * 3,
+            vy: uy * spd + ux * swirl + (Math.random() - 0.5) * 3,
+            a: 0.85 + Math.random() * 0.15,
+            decay: 0.008 + Math.random() * 0.013,
+            size: 1.4 + Math.random() * 2.6,
+            hot: Math.random() < 0.16,        // 一部を白熱した火花にする
+            color: color
+          });
         }
       }
     }
 
-    // 画面上の実際の文字位置を取得してサンプリング
-    var mainEl = el('spNeonText');
-    var subEl  = el('spSubText');
-    var mainCY = mainEl ? (mainEl.getBoundingClientRect().top + mainEl.getBoundingClientRect().height / 2) : cy - 50;
-    var subCY  = subEl  ? (subEl.getBoundingClientRect().top  + subEl.getBoundingClientRect().height  / 2) : cy + 50;
+    // 画面が広いほど間引いて、粒子数が膨らみすぎないようにする
+    var step = W * H > 900000 ? 4 : 3;
+    sample(el("spNeonText"), "パチスロ", "rgba(255,205,110,1)", "900", step);
+    sample(el("spSubText"),  "収支管理", "rgba(90,235,165,1)",  "700", step);
 
-    sampleText('パチスロ', 78, 'rgba(79,140,255,1)', mainCY);
-    sampleText('収支管理', 28, 'rgba(40,209,124,1)', subCY);
+    return list.length ? { canvas: canvas, list: list, W: W, H: H } : null;
+  }
 
-    // HTMLテキストを即座に非表示
-    var logoWrap = el('spLogoWrap');
-    if (logoWrap) logoWrap.style.opacity = '0';
+  function runParticles(pack, onDone){
+    var ctx = pack.canvas.getContext("2d");
+    var list = pack.list, W = pack.W, H = pack.H;
+    var start = null, MAX = 1100;
 
-    var startTime = null;
-    var maxDuration = 2000; // ms
+    function frame(ts){
+      if (done) return;
+      if (start === null) start = ts;
+      var elapsed = ts - start;
 
-    function animate(ts) {
-      if (!startTime) startTime = ts;
       ctx.clearRect(0, 0, W, H);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
 
       var alive = false;
-      for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
-        p.x  += p.vx;
-        p.y  += p.vy;
-        p.vx *= 0.97;
-        p.vy *= 0.97;
-        p.alpha -= p.decay;
-        if (p.alpha > 0) {
-          alive = true;
-          ctx.globalAlpha = p.alpha;
-          ctx.fillStyle   = p.color;
-          ctx.fillRect(p.x, p.y, p.size, p.size);
-        }
-      }
-      ctx.globalAlpha = 1;
+      for (var i = 0; i < list.length; i++){
+        var p = list[i];
+        if (p.a <= 0) continue;
 
-      var elapsed = ts - startTime;
-      if (alive && elapsed < maxDuration) {
-        requestAnimationFrame(animate);
-      } else {
-        onDone();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.975;
+        p.vy = p.vy * 0.975 + 0.16;   // わずかな重力で火の粉らしく落とす
+        p.a  -= p.decay;
+        if (p.a <= 0) continue;
+        alive = true;
+
+        ctx.globalAlpha = p.a;
+        // 速度方向に尾を引かせて疾走感を出す
+        ctx.strokeStyle = p.hot ? "rgba(255,255,255,1)" : p.color;
+        ctx.lineWidth   = p.size;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.vx * 2.4, p.y - p.vy * 2.4);
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+
+      if (alive && elapsed < MAX) requestAnimationFrame(frame);
+      else onDone();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ==========================================================
+  //  背景エフェクト（集中線・衝撃波・火花・火の粉）
+  // ==========================================================
+  function createBackdrop(canvas, disabled){
+    var noop = function(){};
+    var stub = { start:noop, stop:noop, ring:noop, sparks:noop, level:noop, charge:noop, hush:noop, bang:noop };
+    if (!canvas || disabled) return stub;
+
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return stub;
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    var W = 0, H = 0, cx = 0, cy = 0, R = 0;
+
+    function resize(){
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width  = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      cx = W / 2; cy = H * 0.46;
+      var fy = Math.max(cy, H - cy);
+      R = Math.sqrt(cx * cx + fy * fy) * 1.12;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // 集中線
+    var RAYS = 56, rays = [];
+    for (var i = 0; i < RAYS; i++){
+      rays.push({
+        a:  (i / RAYS) * Math.PI * 2 + (Math.random() - 0.5) * 0.06,
+        w:  0.008 + Math.random() * 0.026,
+        r0: 0.05  + Math.random() * 0.12,
+        r1: 0.72  + Math.random() * 0.5,
+        ph: Math.random() * Math.PI * 2
+      });
+    }
+
+    var rings = [], sparks = [], streaks = [], embers = [];
+
+    var st = {
+      t: 0, rot: 0, dim: 1,
+      intensity: 0.06, tIntensity: 0.34,
+      mix: 0,          tMix: 0,          // 0=青 / 1=金
+      spin: 0.1,       tSpin: 0.28
+    };
+
+    var running = false, rafId = 0, last = 0;
+
+    function col(m, a){
+      var r = Math.round(79  + (255 - 79)  * m);
+      var g = Math.round(140 + (185 - 140) * m);
+      var b = Math.round(255 + (70  - 255) * m);
+      return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+    }
+
+    function step(k){
+      st.t += 16.67 * k;
+      st.intensity += (st.tIntensity - st.intensity) * Math.min(1, 0.055 * k);
+      st.mix       += (st.tMix       - st.mix)       * Math.min(1, 0.040 * k);
+      st.spin      += (st.tSpin      - st.spin)      * Math.min(1, 0.045 * k);
+      st.rot       += st.spin * 0.012 * k;
+
+      var I = st.intensity * st.dim;
+
+      // 中心から吹き出す流線
+      var want = Math.min(6, I * 6);
+      while (want-- > 0 && streaks.length < 240 && Math.random() < 0.9){
+        var a  = Math.random() * Math.PI * 2;
+        var sp = (4 + Math.random() * 13) * (0.6 + I * 1.5);
+        var r0 = R * (0.04 + Math.random() * 0.1);
+        streaks.push({
+          x: cx + Math.cos(a) * r0, y: cy + Math.sin(a) * r0,
+          vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+          a: 0.5 + Math.random() * 0.5, life: 1
+        });
+      }
+
+      // チャージ中は火の粉が舞い上がる
+      if (st.mix > 0.15 && embers.length < 120 && Math.random() < st.mix * 0.9){
+        embers.push({
+          x: cx + (Math.random() - 0.5) * W * 0.9,
+          y: H + 10,
+          vy: -(0.7 + Math.random() * 2.2),
+          vx: (Math.random() - 0.5) * 0.7,
+          ph: Math.random() * Math.PI * 2,
+          size: 1 + Math.random() * 2.2,
+          a: 0.35 + Math.random() * 0.5
+        });
+      }
+
+      var i, o;
+      for (i = streaks.length - 1; i >= 0; i--){
+        o = streaks[i];
+        o.x += o.vx * k; o.y += o.vy * k;
+        o.vx *= 1.012; o.vy *= 1.012;
+        o.life -= 0.022 * k;
+        if (o.life <= 0 || o.x < -60 || o.x > W + 60 || o.y < -60 || o.y > H + 60) streaks.splice(i, 1);
+      }
+      for (i = embers.length - 1; i >= 0; i--){
+        o = embers[i];
+        o.ph += 0.06 * k;
+        o.x  += (o.vx + Math.sin(o.ph) * 0.5) * k;
+        o.y  += o.vy * k;
+        o.a  -= 0.004 * k;
+        if (o.a <= 0 || o.y < -20) embers.splice(i, 1);
+      }
+      for (i = rings.length - 1; i >= 0; i--){
+        o = rings[i];
+        if (o.delay > 0){ o.delay -= 16.67 * k; continue; }
+        o.r += o.speed * k;
+        o.a -= o.decay * k;
+        o.width *= 0.965;
+        if (o.a <= 0 || o.r > R * 1.5) rings.splice(i, 1);
+      }
+      for (i = sparks.length - 1; i >= 0; i--){
+        o = sparks[i];
+        o.x += o.vx * k; o.y += o.vy * k;
+        o.vx *= 0.972; o.vy = o.vy * 0.972 + 0.12 * k;
+        o.a -= o.decay * k;
+        if (o.a <= 0) sparks.splice(i, 1);
       }
     }
 
-    requestAnimationFrame(animate);
+    function draw(){
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      var I = st.intensity * st.dim;
+      ctx.globalCompositeOperation = "lighter";
+
+      // 中心のブルーム
+      var pulse = 0.62 + 0.38 * Math.sin(st.t * 0.005);
+      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.6);
+      g.addColorStop(0,   col(st.mix, 0.40 * I * pulse));
+      g.addColorStop(0.4, col(st.mix, 0.12 * I));
+      g.addColorStop(1,   col(st.mix, 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+
+      // 集中線（全ての楔を一度のパスでまとめて塗る）
+      var rg = ctx.createRadialGradient(cx, cy, R * 0.04, cx, cy, R);
+      rg.addColorStop(0,    col(st.mix, 0));
+      rg.addColorStop(0.26, col(st.mix, 0.30 * I));
+      rg.addColorStop(0.7,  col(st.mix, 0.14 * I));
+      rg.addColorStop(1,    col(st.mix, 0));
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      for (var i = 0; i < rays.length; i++){
+        var ray = rays[i];
+        var a = ray.a + st.rot;
+        var w = ray.w * (0.65 + 0.55 * Math.sin(st.t * 0.006 + ray.ph)) * (0.8 + I * 0.8);
+        var r0 = ray.r0 * R, r1 = ray.r1 * R * (0.85 + I * 0.35);
+        ctx.moveTo(cx + Math.cos(a - w) * r0, cy + Math.sin(a - w) * r0);
+        ctx.lineTo(cx + Math.cos(a) * r1,     cy + Math.sin(a) * r1);
+        ctx.lineTo(cx + Math.cos(a + w) * r0, cy + Math.sin(a + w) * r0);
+      }
+      ctx.fill();
+
+      // 流線
+      ctx.lineCap = "round";
+      for (i = 0; i < streaks.length; i++){
+        var s = streaks[i];
+        ctx.globalAlpha = Math.max(0, s.a * s.life) * I;
+        ctx.strokeStyle = col(st.mix, 0.9);
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.vx * 3, s.y - s.vy * 3);
+        ctx.stroke();
+      }
+
+      // 火の粉
+      for (i = 0; i < embers.length; i++){
+        var e = embers[i];
+        ctx.globalAlpha = Math.max(0, e.a);
+        ctx.fillStyle = "rgba(255,190,90,1)";
+        ctx.fillRect(e.x, e.y, e.size, e.size);
+      }
+
+      // 衝撃波
+      for (i = 0; i < rings.length; i++){
+        var o = rings[i];
+        if (o.delay > 0) continue;
+        ctx.globalAlpha = Math.max(0, o.a);
+        ctx.strokeStyle = o.mix < 0 ? "rgba(90,240,165,1)" : col(o.mix, 1);
+        ctx.lineWidth = Math.max(0.5, o.width);
+        ctx.beginPath();
+        ctx.arc(cx, cy, o.r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // 火花
+      for (i = 0; i < sparks.length; i++){
+        var p = sparks[i];
+        ctx.globalAlpha = Math.max(0, p.a);
+        ctx.strokeStyle = p.hot ? "rgba(255,255,255,1)" : col(st.mix, 1);
+        ctx.lineWidth = p.size;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
+        ctx.stroke();
+      }
+
+      // ビネット
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+      var vg = ctx.createRadialGradient(cx, cy, R * 0.3, cx, cy, R * 0.95);
+      vg.addColorStop(0, "rgba(0,0,0,0)");
+      vg.addColorStop(1, "rgba(0,0,0,.6)");
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    function loop(ts){
+      if (!running) return;
+      var dt = last ? Math.min(50, ts - last) : 16.67;
+      last = ts;
+      step(dt / 16.67);
+      draw();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    return {
+      start: function(){
+        if (running) return;
+        running = true; last = 0;
+        rafId = requestAnimationFrame(loop);
+      },
+      stop: function(){
+        running = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      },
+      level: function(o){
+        if (o.intensity != null) st.tIntensity = o.intensity;
+        if (o.mix       != null) st.tMix       = o.mix;
+        if (o.spin      != null) st.tSpin      = o.spin;
+        st.dim = 1;
+      },
+      ring: function(o){
+        rings.push({
+          r: o.r || R * 0.05,
+          speed: o.speed || 12,
+          width: o.width || 10,
+          a: o.alpha != null ? o.alpha : 0.8,
+          decay: o.decay || 0.032,
+          delay: o.delay || 0,
+          mix: o.mix != null ? o.mix : st.mix
+        });
+      },
+      sparks: function(n, o){
+        o = o || {};
+        for (var i = 0; i < n; i++){
+          var a  = Math.random() * Math.PI * 2;
+          var sp = (o.speed || 12) * (0.35 + Math.random());
+          sparks.push({
+            x: cx, y: cy,
+            vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+            a: 0.8 + Math.random() * 0.2,
+            decay: 0.016 + Math.random() * 0.02,
+            size: 1 + Math.random() * 2.2,
+            hot: Math.random() < 0.4
+          });
+        }
+      },
+      // チャージ：集中線を加速させながら青 → 金へ寄せていく
+      charge: function(ms){
+        st.tIntensity = 1;
+        st.tMix       = 1;
+        st.tSpin      = 2.6;
+        var pulses = [220, 450, 640, 790, 900];
+        for (var i = 0; i < pulses.length; i++){
+          (function(d, idx){
+            setTimeout(function(){
+              if (!running) return;
+              rings.push({ r: R * 0.04, speed: 9 + idx * 2.5, width: 5 + idx * 1.5,
+                           a: 0.35 + idx * 0.1, decay: 0.03, delay: 0, mix: st.mix });
+            }, d);
+          })(pulses[i], i);
+        }
+      },
+      // 静寂：一瞬すべてを落とす
+      hush: function(){ st.dim = 0.06; },
+      // 爆発
+      bang: function(){
+        st.dim = 1;
+        st.intensity = 1.6; st.tIntensity = 0;
+        st.mix = 1;         st.tMix = 1;
+        st.spin = 4;        st.tSpin = 0.4;
+        rings.push({ r: 0, speed: 32, width: 26, a: 1,   decay: 0.030, delay: 0,   mix: 1 });
+        rings.push({ r: 0, speed: 22, width: 14, a: .8,  decay: 0.026, delay: 70,  mix: 1 });
+        rings.push({ r: 0, speed: 15, width: 8,  a: .55, decay: 0.024, delay: 150, mix: 1 });
+        this.sparks(220, { speed: 26 });
+      }
+    };
   }
 })();
-
 
 // ======================
 //  便利関数

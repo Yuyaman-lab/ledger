@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- スプラッシュのタイトル用。text= で「パチスロ収支管理」の8文字だけを取得するため数KBで済む。
+       ヒラギノ角ゴ ProN は W3/W6 しか無く、900 指定が偽ボールドになって字が痩せて見えていた。 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&text=%E3%83%91%E3%83%81%E3%82%B9%E3%83%AD%E5%8F%8E%E6%94%AF%E7%AE%A1%E7%90%86&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <meta name="theme-color" content="#000000" />
 
@@ -26,286 +29,151 @@
 
   /* ══════════════════════════════════════════════
      スプラッシュ画面
-     Phase 1  スラムイン（巨大な文字が奥から叩きつけられる）
-     Phase 2  ネオン点灯フリッカー
-     Phase 3  チャージ（集中線加速・青→金の色変化・振動）
-     Phase 4  静寂（一瞬の暗転）
-     Phase 5  爆発（フラッシュ＋衝撃波＋文字の粒子化）
+     暗転した画面に光の柱が立ち上がり、走査線が通過したあと
+     柱がタイトルの字形に収束して固まり、最後に光が抜けて消える。
+
+     文字は Noto Sans JP の 900（本物の太字）。
+     ヒラギノ角ゴ ProN は W3/W6 しか持たないため、900 を指定すると
+     ブラウザが太らせた偽ボールドになり、これが安っぽさの原因だった。
+     必要な8文字だけをサブセットして読み込んでいる。
      ══════════════════════════════════════════════ */
 
   #splashScreen {
     position: fixed; inset: 0; z-index: 99999;
-    background: radial-gradient(ellipse 72% 62% at 50% 46%, #0f1c58 0%, #0a1020 48%, #04060c 100%);
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
     overflow: hidden;
-    transition: opacity 0.55s ease;
+    transition: opacity .5s ease;
   }
   #splashScreen.splash-fade { opacity: 0 !important; pointer-events: none; }
 
-  /* 画面全体を揺らすラッパー（ロゴと両キャンバスをまとめて振動させる） */
-  #splashShake {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    will-change: transform, opacity, filter;
+  /* 光の柱・走査線・字形マスクを描くキャンバス
+     （canvas は置換要素なので inset:0 だけでは伸びない。実寸を明示する） */
+  #splashStage {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    z-index: 1; pointer-events: none;
   }
 
-  /* 背景エフェクト（集中線・衝撃波・火の粉） */
-  /* canvas は置換要素なので inset:0 だけでは伸びない。実寸を明示する。 */
-  #splashBg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-
-  /* 文字の粒子化エフェクト */
-  #splashCanvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; display: none; pointer-events: none; }
-
-  /* フラッシュ（衝撃の瞬間に画面全体を白飛びさせる） */
+  /* 全面を白く飛ばすと安っぽくなるので、ワードマークの周りだけを一瞬滲ませる */
   #splashFlash {
     position: absolute; inset: 0; z-index: 60;
-    pointer-events: none; opacity: 0; background: #fff;
+    pointer-events: none; opacity: 0;
   }
-  #splashFlash.flash-main {
-    background: radial-gradient(circle at 50% 46%, #fff 0%, rgba(160,200,255,.92) 38%, rgba(60,110,255,0) 78%);
-    animation: flashPop .30s ease-out forwards;
+  #splashFlash.f-lock {
+    background: radial-gradient(ellipse 78% 22% at 50% 46%,
+      rgba(255,255,255,.5) 0%, rgba(186,214,255,.2) 42%, rgba(110,155,255,0) 74%);
+    animation: fLock .5s ease-out forwards;
   }
-  #splashFlash.flash-sub {
-    background: radial-gradient(circle at 50% 60%, #eafff4 0%, rgba(70,235,160,.8) 38%, rgba(40,209,124,0) 78%);
-    animation: flashPop .24s ease-out forwards;
+  #splashFlash.f-out {
+    background: radial-gradient(ellipse 92% 34% at 50% 46%,
+      rgba(255,255,255,.72) 0%, rgba(255,236,196,.34) 40%, rgba(255,180,80,0) 76%);
+    animation: fOut .42s ease-out forwards;
   }
-  #splashFlash.flash-mega {
-    background: radial-gradient(circle at 50% 46%, #fff 0%, #fff6dc 18%, #ffe3a4 34%, rgba(255,190,90,.78) 52%, rgba(255,150,40,.42) 70%, rgba(255,110,0,.14) 85%, rgba(255,90,0,0) 100%);
-    animation: flashMega .8s ease-out forwards;
-  }
-  @keyframes flashPop  { 0%{opacity:0} 7%{opacity:.95} 100%{opacity:0} }
-  @keyframes flashMega { 0%{opacity:0} 4%{opacity:1} 20%{opacity:.9} 45%{opacity:.35} 100%{opacity:0} }
+  @keyframes fLock { 0%{opacity:0} 14%{opacity:1} 100%{opacity:0} }
+  @keyframes fOut  { 0%{opacity:0} 10%{opacity:1} 100%{opacity:0} }
 
-  /* 振動 */
-  #splashShake.shake-sm   { animation: shakeSm   .30s ease-out both; }
-  #splashShake.shake-lg   { animation: shakeLg   .46s cubic-bezier(.36,.07,.19,.97) both; }
-  #splashShake.shake-mega { animation: shakeMega .85s cubic-bezier(.36,.07,.19,.97) both; }
-  @keyframes shakeSm {
-    0%{transform:translate(0,0)} 20%{transform:translate(-4px,3px)} 40%{transform:translate(4px,-3px)}
-    60%{transform:translate(-3px,-2px)} 80%{transform:translate(2px,2px)} 100%{transform:translate(0,0)}
-  }
-  @keyframes shakeLg {
-    0%{transform:translate(0,0) rotate(0)}
-    8%{transform:translate(-10px,6px) rotate(-.45deg)}
-    18%{transform:translate(9px,-7px) rotate(.4deg)}
-    28%{transform:translate(-7px,-5px) rotate(-.3deg)}
-    40%{transform:translate(6px,5px) rotate(.25deg)}
-    54%{transform:translate(-4px,3px) rotate(-.15deg)}
-    70%{transform:translate(3px,-2px) rotate(.1deg)}
-    85%{transform:translate(-1px,1px) rotate(0)}
-    100%{transform:translate(0,0) rotate(0)}
-  }
-  @keyframes shakeMega {
-    0%{transform:translate(0,0) rotate(0) scale(1)}
-    5%{transform:translate(-14px,9px) rotate(-.6deg) scale(1.02)}
-    12%{transform:translate(13px,-11px) rotate(.55deg) scale(1.015)}
-    20%{transform:translate(-12px,-8px) rotate(-.5deg) scale(1.012)}
-    29%{transform:translate(10px,9px) rotate(.45deg) scale(1.008)}
-    39%{transform:translate(-8px,6px) rotate(-.35deg) scale(1.006)}
-    50%{transform:translate(7px,-6px) rotate(.28deg) scale(1.004)}
-    62%{transform:translate(-5px,-4px) rotate(-.2deg) scale(1.002)}
-    75%{transform:translate(3px,3px) rotate(.12deg) scale(1.001)}
-    88%{transform:translate(-2px,1px) rotate(0) scale(1)}
-    100%{transform:translate(0,0) rotate(0) scale(1)}
+  /* ── ワードマーク ── */
+  .sp-wordmark {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    margin-top: -2vh;
   }
 
-  /* ── ロゴ ── */
-  .sp-logo-wrap {
-    position: relative; z-index: 10; text-align: center;
-    width: 100%; margin-top: -3vh;
-    will-change: transform, filter;
-  }
-  .sp-logo-wrap.charge { animation: chargeTremble 1s linear forwards; }
-  @keyframes chargeTremble {
-    0%  { transform: translate(0,0)        scale(1);     }
-    12% { transform: translate(-1px,1px)   scale(1.004); }
-    24% { transform: translate(1.5px,-1px) scale(1.009); }
-    36% { transform: translate(-2.5px,-2px)scale(1.015); }
-    48% { transform: translate(3px,2px)    scale(1.022); }
-    60% { transform: translate(-4px,2.5px) scale(1.030); }
-    72% { transform: translate(4.5px,-3px) scale(1.040); }
-    84% { transform: translate(-6px,4px)   scale(1.052); }
-    93% { transform: translate(6px,-4.5px) scale(1.062); }
-    100%{ transform: translate(0,0)        scale(1.075); }
-  }
-  .sp-logo-wrap.blown { opacity: 0; }
-
-  /* パチスロ — 4層ネオン */
-  .sp-neon-halo, .sp-neon-glow, .sp-neon-edge, .sp-neon-text {
-    font-size: clamp(56px, 19vw, 120px);
+  .sp-title {
+    /* letter-spacing は 0。キャンバス側の字形マスクと1pxもずらさないため。 */
+    font-family: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
     font-weight: 900;
-    letter-spacing: .08em; text-indent: .08em;
-    display: block;
-    font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
-  }
-  .sp-neon-halo { position: absolute; top: 0; left: 0; right: 0; color: rgba(79,140,255,.22); filter: blur(34px); opacity: 0; }
-  .sp-neon-glow { position: absolute; top: 0; left: 0; right: 0; color: rgba(79,140,255,.45); filter: blur(14px); opacity: 0; }
-  .sp-neon-edge {
-    position: absolute; top: 0; left: 0; right: 0;
-    color: transparent; -webkit-text-stroke: 1.5px rgba(120,170,255,.5);
-    filter: blur(1.5px); opacity: 0;
-  }
-  .sp-neon-text { position: relative; color: rgba(240,245,255,.98); opacity: 0; }
-  .sp-neon-wrap { position: relative; display: block; width: 100%; text-align: center; will-change: transform, filter; }
-
-  /* スラムイン：奥から巨大な文字が飛んできて叩きつけられる */
-  .sp-neon-wrap.slam { animation: slamMain .9s cubic-bezier(.14,.85,.28,1) both; }
-  @keyframes slamMain {
-    0%  { transform: scale(5) rotate(-5deg);   filter: blur(32px); opacity: 0; }
-    22% { opacity: 1; }
-    62% { transform: scale(.88) rotate(.7deg); filter: blur(0);    opacity: 1; }
-    76% { transform: scale(1.07) rotate(-.5deg); }
-    88% { transform: scale(.985) rotate(.2deg); }
-    100%{ transform: scale(1) rotate(0);       filter: blur(0);    opacity: 1; }
+    font-size: clamp(54px, 18.5vw, 118px);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    color: #fff;
+    opacity: 0;
+    will-change: opacity, transform;
   }
 
-  /* 点灯フリッカー（不透明度） */
-  .sp-neon-halo.on, .sp-neon-glow.on, .sp-neon-edge.on { animation: neonFlicker 1.7s ease-out forwards; }
-  .sp-neon-text.on { animation: neonSlamOn 1.7s ease-out forwards; }
-  @keyframes neonFlicker {
-    0%{opacity:.85} 28%{opacity:1} 32%{opacity:.1} 36%{opacity:1} 41%{opacity:.22}
-    45%{opacity:1} 51%{opacity:.08} 56%{opacity:1} 64%{opacity:.45} 68%{opacity:1} 100%{opacity:1}
+  /* 確定：文字が現れ、暖色のハイライトが左から右へ一度だけ走る */
+  .sp-title.lit {
+    filter: drop-shadow(0 0 22px rgba(125,170,255,.34));
+    animation: titleIn .26s ease-out both,
+               titleSweep 1.05s cubic-bezier(.36,0,.16,1) .08s both;
   }
-  @keyframes neonSlamOn {
-    0%  { opacity:.9; color:#fff; text-shadow:0 0 30px rgba(180,210,255,.9); }
-    28% { opacity:1;  color:#fff; text-shadow:0 0 56px rgba(255,255,255,1), 0 0 120px rgba(120,170,255,.7); }
-    32% { opacity:.1; text-shadow:none; }
-    36% { opacity:1;  text-shadow:0 0 24px rgba(79,140,255,.8), 0 0 60px rgba(79,140,255,.4); }
-    41% { opacity:.22; text-shadow:none; }
-    45% { opacity:1;  text-shadow:0 0 20px rgba(79,140,255,.75), 0 0 52px rgba(79,140,255,.35); }
-    51% { opacity:.08; text-shadow:none; }
-    56% { opacity:1;  text-shadow:0 0 22px rgba(79,140,255,.8), 0 0 58px rgba(79,140,255,.4); }
-    64% { opacity:.45; text-shadow:0 0 10px rgba(79,140,255,.4); }
-    68% { opacity:1;  text-shadow:0 0 24px rgba(79,140,255,.85), 0 0 62px rgba(79,140,255,.45); }
-    100%{ opacity:1;  color:rgba(240,245,255,.98);
-          text-shadow:0 0 20px rgba(79,140,255,.8), 0 0 50px rgba(79,140,255,.4), 0 0 90px rgba(79,140,255,.18); }
+  /* 背景を 250% 幅にして 100%→0% へ動かす。この範囲なら文字は常に
+     グラデーションで覆われたまま（＝白いまま）、暖色の帯だけが横切る。
+     0〜100% の外へ出すと背景が字から外れて透明になり、文字が消える。 */
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .sp-title.lit {
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      background-repeat: no-repeat;
+      background-size: 250% 100%;
+      background-position: 100% 0;
+      background-image: linear-gradient(100deg,
+        #ffffff 0%, #ffffff 42%,
+        #fff7e0 47%, #ffd98f 50%, #fff7e0 53%,
+        #ffffff 58%, #ffffff 100%);
+    }
+  }
+  @keyframes titleIn    { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes titleSweep { from { background-position: 100% 0 } to { background-position: 0% 0 } }
+
+  .sp-title.out { animation: titleOut .42s cubic-bezier(.55,0,.9,.35) forwards; }
+  @keyframes titleOut {
+    0%   { opacity: 1; transform: scale(1);     }
+    100% { opacity: 0; transform: scale(1.045); }
   }
 
-  /* チャージ：青 → 金へ発色を上げていく（激アツ演出） */
-  .sp-neon-text.charge-lit { animation: mainChargeLit 1s cubic-bezier(.5,0,.9,.6) forwards; }
-  @keyframes mainChargeLit {
-    0%  { opacity:1; color:rgba(240,245,255,.98); text-shadow:0 0 20px rgba(79,140,255,.8), 0 0 50px rgba(79,140,255,.4), 0 0 90px rgba(79,140,255,.18); }
-    55% { opacity:1; color:#fff; text-shadow:0 0 36px rgba(170,200,255,1), 0 0 86px rgba(120,160,255,.65), 0 0 150px rgba(90,140,255,.35); }
-    100%{ opacity:1; color:#fff; text-shadow:0 0 50px rgba(255,240,195,1), 0 0 110px rgba(255,190,80,.9), 0 0 190px rgba(255,150,40,.55); }
+  /* ── 罫線 ── */
+  .sp-rule {
+    width: 0; height: 1px; margin-top: 20px;
+    background: linear-gradient(90deg, transparent,
+      rgba(226,176,80,.75) 24%, rgba(255,228,168,1) 50%, rgba(226,176,80,.75) 76%, transparent);
+    transition: width .72s cubic-bezier(.16,.84,.28,1), opacity .3s ease;
   }
-  .sp-neon-glow.charge-lit { animation: glowChargeLit 1s ease-in forwards; }
-  @keyframes glowChargeLit { 0%{color:rgba(79,140,255,.45);opacity:1} 100%{color:rgba(255,195,85,.9);opacity:1} }
-  .sp-neon-halo.charge-lit { animation: haloChargeLit 1s ease-in forwards; }
-  @keyframes haloChargeLit { 0%{color:rgba(79,140,255,.22);opacity:1} 100%{color:rgba(255,175,60,.55);opacity:1} }
-  .sp-neon-edge.charge-lit { animation: edgeChargeLit 1s ease-in forwards; }
-  @keyframes edgeChargeLit {
-    0%  { -webkit-text-stroke-color:rgba(120,170,255,.5); filter:blur(1.5px); opacity:1; }
-    100%{ -webkit-text-stroke-color:rgba(255,230,160,.95); filter:blur(3px);  opacity:1; }
-  }
+  .sp-rule.show { width: min(58vw, 300px); }
+  .sp-rule.out  { opacity: 0; }
 
-  /* 区切り線 */
-  .sp-divider-line {
-    height: 2px; width: 0;
-    background: linear-gradient(to right, transparent, rgba(79,140,255,.5) 18%, rgba(160,200,255,.95) 50%, rgba(79,140,255,.5) 82%, transparent);
-    margin: 14px auto 0;
-    box-shadow: 0 0 14px rgba(79,140,255,.6);
-    transition: width .55s cubic-bezier(.22,1,.36,1);
-  }
-  .sp-divider-line.show { width: min(74vw, 340px); }
-  .sp-divider-line.charge-lit { animation: divChargeLit 1s ease-in forwards; }
-  /* 青(色相 約217°)を 180° 回して金(約37°)に寄せる */
-  @keyframes divChargeLit {
-    0%  { box-shadow:0 0 14px rgba(79,140,255,.6);  filter:none; }
-    100%{ box-shadow:0 0 32px rgba(120,180,255,.95); filter:hue-rotate(180deg) saturate(1.7) brightness(1.35); }
-  }
-
-  /* 収支管理 — 3層ネオン */
-  .sp-sub-wrap {
-    position: relative; display: block; width: 100%; text-align: center; margin-top: 16px;
-    will-change: transform, filter;
-  }
-  .sp-sub-wrap.slam { animation: slamSub .7s cubic-bezier(.14,.85,.28,1) both; }
-  @keyframes slamSub {
-    0%  { transform: scale(2.8) translateY(26px); filter: blur(18px); opacity: 0; }
-    28% { opacity: 1; }
-    62% { transform: scale(.92) translateY(0);    filter: blur(0);    opacity: 1; }
-    80% { transform: scale(1.05); }
-    100%{ transform: scale(1);                    filter: blur(0);    opacity: 1; }
-  }
-  .sp-sub-glow, .sp-sub-edge, .sp-sub-text {
-    font-size: clamp(24px, 9.5vw, 50px);
+  /* ── 添え字 ── */
+  .sp-sub {
+    font-family: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
     font-weight: 700;
-    letter-spacing: .26em; text-indent: .26em; display: block;
-    font-family: 'Outfit', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    font-size: clamp(11px, 3.3vw, 17px);
+    line-height: 1;
+    margin-top: 17px;
+    letter-spacing: .5em; text-indent: .5em;
+    color: rgba(203,216,238,.9);
+    opacity: 0;
+    white-space: nowrap;
   }
-  .sp-sub-glow { position: absolute; top: 0; left: 0; right: 0; color: rgba(40,209,124,.4); filter: blur(13px); opacity: 0; }
-  .sp-sub-edge {
-    position: absolute; top: 0; left: 0; right: 0;
-    color: transparent; -webkit-text-stroke: 1px rgba(80,230,160,.5);
-    filter: blur(1px); opacity: 0;
+  .sp-sub.show { animation: subIn .78s cubic-bezier(.2,.72,.2,1) both; }
+  @keyframes subIn {
+    from { opacity: 0; letter-spacing: .95em; text-indent: .95em; filter: blur(3px); }
+    to   { opacity: 1; letter-spacing: .5em;  text-indent: .5em;  filter: blur(0);   }
   }
-  .sp-sub-text { position: relative; color: rgba(180,255,220,.95); opacity: 0; }
-
-  .sp-sub-glow.on, .sp-sub-edge.on { animation: subFlicker .85s ease-out forwards; }
-  .sp-sub-text.on { animation: subNeonOn .85s ease-out forwards; }
-  @keyframes subFlicker {
-    0%{opacity:.85} 34%{opacity:1} 40%{opacity:.12} 46%{opacity:1} 54%{opacity:.3} 60%{opacity:1} 100%{opacity:1}
-  }
-  @keyframes subNeonOn {
-    0%  { opacity:.9; color:#eafff4; text-shadow:0 0 22px rgba(120,255,190,.9); }
-    34% { opacity:1;  color:#fff;    text-shadow:0 0 44px rgba(150,255,205,1), 0 0 90px rgba(40,209,124,.6); }
-    40% { opacity:.12; text-shadow:none; }
-    46% { opacity:1;  text-shadow:0 0 18px rgba(40,209,124,.8), 0 0 46px rgba(40,209,124,.35); }
-    54% { opacity:.3;  text-shadow:none; }
-    60% { opacity:1;  text-shadow:0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4); }
-    100%{ opacity:1;  color:rgba(180,255,220,.95);
-          text-shadow:0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4), 0 0 90px rgba(40,209,124,.18); }
-  }
-  .sp-sub-text.charge-lit { animation: subChargeLit 1s ease-in forwards; }
-  @keyframes subChargeLit {
-    0%  { opacity:1; color:rgba(180,255,220,.95); text-shadow:0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4); }
-    100%{ opacity:1; color:#fff;                  text-shadow:0 0 40px rgba(200,255,225,1), 0 0 90px rgba(255,210,120,.7); }
-  }
-  .sp-sub-glow.charge-lit { animation: subGlowChargeLit 1s ease-in forwards; }
-  @keyframes subGlowChargeLit { 0%{color:rgba(40,209,124,.4);opacity:1} 100%{color:rgba(255,205,110,.8);opacity:1} }
-  .sp-sub-edge.charge-lit { animation: subEdgeChargeLit 1s ease-in forwards; }
-  @keyframes subEdgeChargeLit {
-    0%  { -webkit-text-stroke-color:rgba(80,230,160,.5);  opacity:1; }
-    100%{ -webkit-text-stroke-color:rgba(255,235,170,.9); filter:blur(2px); opacity:1; }
-  }
+  .sp-sub.out { animation: subOut .32s ease forwards; }
+  @keyframes subOut { to { opacity: 0 } }
 
   /* 動きを減らす設定の端末では、演出を省いて静かに表示する */
   @media (prefers-reduced-motion: reduce) {
-    #splashShake, .sp-logo-wrap, .sp-neon-wrap, .sp-sub-wrap,
-    .sp-neon-halo, .sp-neon-glow, .sp-neon-edge, .sp-neon-text,
-    .sp-sub-glow, .sp-sub-edge, .sp-sub-text, #splashFlash {
-      animation: none !important;
-    }
-    .sp-divider-line { transition: none; }
-    .sp-neon-halo, .sp-neon-glow, .sp-neon-edge, .sp-neon-text,
-    .sp-sub-glow, .sp-sub-edge, .sp-sub-text { opacity: 1; }
-    .sp-neon-text { text-shadow: 0 0 20px rgba(79,140,255,.8), 0 0 50px rgba(79,140,255,.4); }
-    .sp-sub-text  { text-shadow: 0 0 20px rgba(40,209,124,.8), 0 0 50px rgba(40,209,124,.4); }
+    .sp-title, .sp-rule, .sp-sub, #splashFlash { animation: none !important; transition: none !important; }
+    .sp-title { opacity: 1; color: #fff; background: none; }
+    .sp-sub   { opacity: 1; }
+    .sp-rule.show { width: min(58vw, 300px); }
   }
   </style>
 </head>
 <body class="navy-ui" style="background-color: #000;">
 
   <div id="splashScreen">
-    <div id="splashShake">
-      <canvas id="splashBg"></canvas>
+    <canvas id="splashStage"></canvas>
 
-      <div class="sp-logo-wrap" id="spLogoWrap">
-        <div class="sp-neon-wrap" id="spMainSlam">
-          <div class="sp-neon-halo" id="spNeonHalo">パチスロ</div>
-          <div class="sp-neon-glow" id="spNeonGlow">パチスロ</div>
-          <div class="sp-neon-edge" id="spNeonEdge">パチスロ</div>
-          <div class="sp-neon-text" id="spNeonText">パチスロ</div>
-        </div>
-        <div class="sp-divider-line" id="spDivLine"></div>
-        <div class="sp-sub-wrap" id="spSubSlam">
-          <div class="sp-sub-glow" id="spSubGlow">収支管理</div>
-          <div class="sp-sub-edge" id="spSubEdge">収支管理</div>
-          <div class="sp-sub-text" id="spSubText">収支管理</div>
-        </div>
-      </div>
-
-      <canvas id="splashCanvas"></canvas>
+    <div class="sp-wordmark">
+      <div class="sp-title" id="spTitle">パチスロ</div>
+      <div class="sp-rule"  id="spRule"></div>
+      <div class="sp-sub"   id="spSub">収支管理</div>
     </div>
+
     <div id="splashFlash"></div>
   </div>
 

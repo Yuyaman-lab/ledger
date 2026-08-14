@@ -29,6 +29,14 @@
   var timers = [];
   var done   = false;
 
+  // 版ずれ等で必要な要素が無いときは、演出を諦めてすぐアプリへ渡す。
+  // 背景だけが残って固まるのを防ぐための保険。
+  if (!stage || !titleEl || !ruleEl || !subEl || !flashEl) {
+    splash.style.display = "none";
+    splash.classList.add("splash-fade");
+    return;
+  }
+
   function at(ms, fn){ timers.push(setTimeout(fn, ms)); }
   function clearAll(){ for (var i=0;i<timers.length;i++) clearTimeout(timers[i]); timers = []; }
 
@@ -184,23 +192,25 @@
       if (!band.h){ band.top = cy - H * 0.08; band.h = H * 0.16; }
     }
 
+    // 細かい粒が縦に流れる見え方にする。1本ずつが短い破線で、
+    // 幅は乱数を二乗して 1〜2px に寄せている。
     function buildBars(){
       bars = [];
-      var x = 0;
-      while (x < W){
-        // 細い柱を多めにするため、乱数を二乗して幅を偏らせる
-        var w = 2 + Math.random() * Math.random() * 24;
-        var lum = Math.random();
+      var count = Math.round(W * H / 260);
+      count = Math.max(700, Math.min(2800, count));
+      for (var i = 0; i < count; i++){
+        var x = Math.random() * W;
         bars.push({
-          x: x, w: w, lum: lum,
-          y: -H * Math.random() * 1.4,
-          h: H * (0.22 + Math.random() * 0.95),
-          v: 5 + Math.random() * 26,
-          hot: Math.random() < 0.07,
+          x: x,
+          w: 0.8 + Math.random() * Math.random() * 3.4,
+          lum: Math.random(),
+          y: -H * Math.random() * 1.3,
+          h: H * (0.012 + Math.random() * Math.random() * 0.15),
+          v: 4 + Math.random() * 30,
+          hot: Math.random() < 0.05,
           // 中央から外側へ順に点灯させる
-          delay: Math.abs(x + w / 2 - cx) / (W / 2 || 1) * 0.55 + Math.random() * 0.22
+          delay: Math.abs(x - cx) / (W / 2 || 1) * 0.55 + Math.random() * 0.22
         });
-        x += w + (Math.random() < 0.28 ? 1 + Math.random() * 7 : 0);
       }
     }
 
@@ -256,6 +266,9 @@
       bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       bctx.clearRect(0, 0, W, H);
 
+      var bandC = band.top + band.h / 2;
+      var squeeze = 1 - S.q * 0.88;   // 収束するほど帯へ寄せ、字の中の密度を上げる
+
       for (var i = 0; i < bars.length; i++){
         var b = bars[i];
         var on = (S.ignite - b.delay) / 0.26;
@@ -264,13 +277,7 @@
 
         var a = (0.30 + b.lum * 0.66) * on;
         bctx.fillStyle = b.hot ? "rgba(231,238,252," + (a * 0.95) + ")" : barColor(b.lum, a);
-        bctx.fillRect(b.x, b.y, b.w, b.h);
-
-        // 太い柱には明るい芯を入れて奥行きを出す
-        if (b.w > 9 && !b.hot){
-          bctx.fillStyle = barColor(Math.min(1, b.lum + 0.35), a * 0.5);
-          bctx.fillRect(b.x + b.w * 0.34, b.y, b.w * 0.32, b.h);
-        }
+        bctx.fillRect(b.x, bandC + (b.y - bandC) * squeeze, b.w, b.h);
       }
 
       // 上下の端をなじませる

@@ -6,7 +6,7 @@
 //  ハイライトが一度走って文字が確定し、最後に光が抜けて消える。
 //
 //  Phase 1  点火   0.00s  中央から外側へ光の柱が点いていく
-//  Phase 2  走査   0.65s  走査線が上から下へ通過し、光が少しずつ強まる
+//  Phase 2  加速   0.65s  粒の光が少しずつ強まる
 //  Phase 3  収束   1.40s  柱が縦に圧縮され、タイトルの字形に収まる
 //  Phase 4  確定   2.20s  DOM のテキストへ引き渡し、ハイライトが走る
 //  Phase 5  退場   3.15s  ワードマークが滲んで引き、暗転してアプリへ
@@ -79,9 +79,8 @@
     fx.to("ignite", 1, 720, 0, "outCubic");
     fx.to("storm",  1, 600, 0, "outCubic");
 
-    // 0.65s  走査線が上から下へ抜け、光が強まりはじめる
+    // 0.65s  光が強まりはじめる
     at(650, function(){
-      fx.scan(760);
       fx.to("lift", .3, 900, 0, "inOutCubic");
     });
 
@@ -136,7 +135,7 @@
   // ==========================================================
   function createStage(canvas, title, titleNode){
     var noop = function(){};
-    var stub = { start:noop, stop:noop, to:noop, scan:noop, buildMask:noop };
+    var stub = { start:noop, stop:noop, to:noop, buildMask:noop };
     if (!canvas) return stub;
 
     var ctx = canvas.getContext("2d");
@@ -160,11 +159,9 @@
       q: 0,           // 字形への収束 0..1
       freeAlpha: 1,   // 自由に流れる柱の不透明度
       maskAlpha: 1,   // 字形に収まった柱の不透明度
-      scanAt: -1,     // 走査線の位置 0..1（負なら非表示）
-      scanDur: 0
     };
 
-    var tweens = [], running = false, rafId = 0, last = 0, scanT = -1;
+    var tweens = [], running = false, rafId = 0, last = 0, clock = 0;
 
     var EASE = {
       linear:    function(t){ return t; },
@@ -208,6 +205,8 @@
           h: H * (0.012 + Math.random() * Math.random() * 0.15),
           v: 4 + Math.random() * 30,
           hot: Math.random() < 0.05,
+          ph: Math.random() * Math.PI * 2,          // うねりの位相
+          wf: 0.004 + Math.random() * 0.010,        // うねりの細かさ
           // 中央から外側へ順に点灯させる
           delay: Math.abs(x - cx) / (W / 2 || 1) * 0.55 + Math.random() * 0.22
         });
@@ -236,6 +235,8 @@
     }
 
     function step(k, dtMs){
+      clock += dtMs;
+
       // トゥイーン
       for (var i = tweens.length - 1; i >= 0; i--){
         var t = tweens[i];
@@ -245,13 +246,6 @@
         var u = t.d > 0 ? Math.min(1, t.t / t.d) : 1;
         S[t.p] = t.from + (t.to - t.from) * t.e(u);
         if (u >= 1) tweens.splice(i, 1);
-      }
-
-      // 走査線
-      if (scanT >= 0){
-        scanT += dtMs;
-        S.scanAt = scanT / S.scanDur;
-        if (S.scanAt > 1.15){ scanT = -1; S.scanAt = -1; }
       }
 
       // 柱の流れ
@@ -266,8 +260,10 @@
       bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       bctx.clearRect(0, 0, W, H);
 
-      var bandC = band.top + band.h / 2;
+      var bandC  = band.top + band.h / 2;
       var squeeze = 1 - S.q * 0.88;   // 収束するほど帯へ寄せ、字の中の密度を上げる
+      var shorten = 1 - S.q * 0.52;   // 同時に粒を短くして、棒ではなく粒に見せる
+      var amp     = 2 + S.q * 16;     // 収束するほど横に大きくうねらせる
 
       for (var i = 0; i < bars.length; i++){
         var b = bars[i];
@@ -275,9 +271,13 @@
         if (on <= 0) continue;
         if (on > 1) on = 1;
 
+        var yy = bandC + (b.y - bandC) * squeeze;
+        // 縦位置に応じて横へずらす。まっすぐな柱が並ぶのを崩して流れを出す。
+        var xx = b.x + Math.sin(yy * b.wf + b.ph + clock * 0.0015) * amp;
+
         var a = (0.30 + b.lum * 0.66) * on;
         bctx.fillStyle = b.hot ? "rgba(231,238,252," + (a * 0.95) + ")" : barColor(b.lum, a);
-        bctx.fillRect(b.x, bandC + (b.y - bandC) * squeeze, b.w, b.h);
+        bctx.fillRect(xx, yy, b.w, b.h * shorten);
       }
 
       // 上下の端をなじませる
@@ -328,18 +328,41 @@
 
       drawBars();
 
-      // 自由に流れる柱。収束が進むほど、タイトルの帯へ縦に切り詰めていく。
+      // 自由に流れる粒。収束が進むほどタイトルの帯へ絞っていくが、
+      // 矩形で切ると角が立って形式ばって見えるので、上下は溶かして消す。
       if (S.freeAlpha > 0.005 && S.q < 0.999){
-        var pad = (1 - S.q) * H;
-        ctx.save();
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.beginPath();
-        ctx.rect(0, band.top - pad, W, band.h + pad * 2);
-        ctx.clip();
+        var pad  = (1 - S.q) * H;
+        var top  = band.top - pad;
+        var bot  = band.top + band.h + pad;
+        var soft = Math.max(70, (bot - top) * 0.75);
+
+        cutx.setTransform(1, 0, 0, 1, 0, 0);
+        cutx.globalCompositeOperation = "source-over";
+        cutx.clearRect(0, 0, cutBuf.width, cutBuf.height);
+        cutx.drawImage(barsBuf, 0, 0);
+
+        var cl = function(v){ return v < 0 ? 0 : v > 1 ? 1 : v; };
+        var t0 = cl((top - soft) / H), t1 = cl(top / H);
+        var b1 = cl(bot / H),          b0 = cl((bot + soft) / H);
+        if (t1 < t0) t1 = t0;
+        if (b1 < t1) b1 = t1;
+        if (b0 < b1) b0 = b1;
+
+        var fade = cutx.createLinearGradient(0, 0, 0, cutBuf.height);
+        fade.addColorStop(0,  "rgba(0,0,0,1)");
+        fade.addColorStop(t0, "rgba(0,0,0,1)");
+        fade.addColorStop(t1, "rgba(0,0,0,0)");
+        fade.addColorStop(b1, "rgba(0,0,0,0)");
+        fade.addColorStop(b0, "rgba(0,0,0,1)");
+        fade.addColorStop(1,  "rgba(0,0,0,1)");
+        cutx.globalCompositeOperation = "destination-out";
+        cutx.fillStyle = fade;
+        cutx.fillRect(0, 0, cutBuf.width, cutBuf.height);
+        cutx.globalCompositeOperation = "source-over";
+
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalAlpha = S.freeAlpha * (1 - S.q * 0.72);
-        ctx.drawImage(barsBuf, 0, 0);
-        ctx.restore();
+        ctx.drawImage(cutBuf, 0, 0);
       }
 
       // 字形に収まった柱
@@ -355,22 +378,6 @@
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalAlpha = S.q * S.maskAlpha;
         ctx.drawImage(cutBuf, 0, 0);
-      }
-
-      // 走査線
-      if (S.scanAt >= 0 && S.scanAt <= 1.1){
-        var y = (-0.1 + S.scanAt * 1.2) * H;
-        var hh = Math.max(2, H * 0.006);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.globalAlpha = 1;
-        var sg = ctx.createLinearGradient(0, y - H * 0.09, 0, y + hh + H * 0.02);
-        sg.addColorStop(0,   "rgba(79,140,255,0)");
-        sg.addColorStop(0.8, "rgba(170,205,255,.30)");
-        sg.addColorStop(1,   "rgba(231,238,252,0)");
-        ctx.fillStyle = sg;
-        ctx.fillRect(0, y - H * 0.09, W, H * 0.11 + hh);
-        ctx.fillStyle = "rgba(231,238,252,.9)";
-        ctx.fillRect(0, y, W, hh);
       }
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -405,7 +412,6 @@
       to: function(prop, to, dur, delay, ease){
         tweens.push({ p: prop, from: null, to: to, d: dur, delay: delay || 0, t: 0, e: EASE[ease] || EASE.outCubic });
       },
-      scan: function(dur){ S.scanDur = dur; scanT = 0; S.scanAt = 0; },
       buildMask: function(){
         measureBand();
         kctx.setTransform(1, 0, 0, 1, 0, 0);

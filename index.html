@@ -15,7 +15,7 @@
   <!-- スプラッシュのタイトル用。text= で「パチスロ収支管理」の8文字だけを取得するため数KBで済む。
        ヒラギノ角ゴ ProN は W3/W6 しか無く、900 指定が偽ボールドになって字が痩せて見えていた。 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&text=%E3%83%91%E3%83%81%E3%82%B9%E3%83%AD%E5%8F%8E%E6%94%AF%E7%AE%A1%E7%90%86&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=33" />
+  <link rel="stylesheet" href="styles.css?v=34" />
   <meta name="theme-color" content="#0b1220" />
 
   <style>
@@ -139,7 +139,7 @@
   .sp-sub {
     font-family: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, sans-serif;
     font-weight: 700;
-    font-size: clamp(12.1px, 3.63vw, 18.7px);   /* 従来比 +10% */
+    font-size: clamp(14.52px, 4.356vw, 22.44px);   /* 当初比 +32%（+10% のあと +20%） */
     line-height: 1;
     margin-top: 17px;
     letter-spacing: .5em; text-indent: .5em;
@@ -370,7 +370,7 @@
 
   <!-- ?v= はキャッシュ対策。index.html と app.js の版がずれると演出が動かないため、
        sw.js の CACHE_NAME を上げるときに同じ番号へ揃える。 -->
-  <script src="boot.js?v=33"></script>
-  <script src="app.js?v=33"></script>
+  <script src="boot.js?v=34"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>

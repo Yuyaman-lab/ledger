@@ -6,7 +6,7 @@
 //  ハイライトが一度走って文字が確定し、最後に光が抜けて消える。
 //
 //  Phase 1  点火   0.00s  中央から外側へ光の柱が点いていく
-//  Phase 2  走査   0.65s  走査線が上から下へ通過し、色が青から暖色へ寄る
+//  Phase 2  走査   0.65s  走査線が上から下へ通過し、光が少しずつ強まる
 //  Phase 3  収束   1.40s  柱が縦に圧縮され、タイトルの字形に収まる
 //  Phase 4  確定   2.20s  DOM のテキストへ引き渡し、ハイライトが走る
 //  Phase 5  退場   3.15s  ワードマークが滲んで引き、暗転してアプリへ
@@ -71,10 +71,10 @@
     fx.to("ignite", 1, 720, 0, "outCubic");
     fx.to("storm",  1, 600, 0, "outCubic");
 
-    // 0.65s  走査線が上から下へ抜け、色が暖色側へ寄りはじめる
+    // 0.65s  走査線が上から下へ抜け、光が強まりはじめる
     at(650, function(){
       fx.scan(760);
-      fx.to("warm", .12, 900, 0, "inOutCubic");
+      fx.to("lift", .3, 900, 0, "inOutCubic");
     });
 
     // 1.40s  収束：柱が縦に圧縮され、字形に収まる
@@ -82,7 +82,7 @@
       fx.buildMask();
       fx.to("q",     1,  820, 0,   "inOutCubic");
       fx.to("storm", .3, 820, 0,   "inOutCubic");
-      fx.to("warm",  .3, 700, 120, "inOutCubic");
+      fx.to("lift",  .85, 700, 120, "inOutCubic");
     });
 
     // 2.20s  確定：DOM のテキストへ引き渡し、ハイライトが一度走る
@@ -148,7 +148,7 @@
     var S = {
       ignite: 0,      // 柱の点灯 0..1
       storm: 0,       // 流れる速さの倍率
-      warm: 0,        // 0 = 青 / 1 = 金
+      lift: 0,        // 階調の明るい側への寄せ 0..1
       q: 0,           // 字形への収束 0..1
       freeAlpha: 1,   // 自由に流れる柱の不透明度
       maskAlpha: 1,   // 字形に収まった柱の不透明度
@@ -204,24 +204,25 @@
       }
     }
 
-    // 青の階調を主役にして、warm のぶんだけ暖色へ寄せる。
-    // 全体を金にすると濁って見えるため、金はタイトルの走査光と罫線だけに使う。
+    // 色はすべてアプリ本体のトークンから取る。
+    //   暗端 #141c4d（トップバーの紺） → 中 #4f8cff（--primary） → 明端 #e7eefc（--text）
+    // lift は色相を変えず、この階調の明るい側へ寄せるだけ。収束するほど輝く。
     function barColor(lum, a){
-      var cool, warm;
+      var base, peak;
       if (lum < 0.5){
         var u = lum / 0.5;
-        cool = [10 + 50*u,  28 + 92*u,  78 + 157*u];
-        warm = [90 + 165*u, 42 + 126*u, 10 +  40*u];
+        base = [20 + 59*u,  28 + 112*u,  77 + 178*u];
+        peak = [46 + 84*u,  70 + 110*u, 150 + 105*u];
       } else {
         var v = (lum - 0.5) / 0.5;
-        cool = [60 + 130*v, 120 + 100*v, 235 + 20*v];
-        warm = [255,        168 + 72*v,   50 + 150*v];
+        base = [ 79 +  91*v, 140 +  65*v, 255];
+        peak = [130 + 101*v, 180 +  58*v, 255];
       }
-      var m = S.warm;
+      var m = S.lift;
       return "rgba(" +
-        Math.round(cool[0] + (warm[0] - cool[0]) * m) + "," +
-        Math.round(cool[1] + (warm[1] - cool[1]) * m) + "," +
-        Math.round(cool[2] + (warm[2] - cool[2]) * m) + "," + a + ")";
+        Math.round(base[0] + (peak[0] - base[0]) * m) + "," +
+        Math.round(base[1] + (peak[1] - base[1]) * m) + "," +
+        Math.round(base[2] + (peak[2] - base[2]) * m) + "," + a + ")";
     }
 
     function step(k, dtMs){
@@ -262,7 +263,7 @@
         if (on > 1) on = 1;
 
         var a = (0.30 + b.lum * 0.66) * on;
-        bctx.fillStyle = b.hot ? "rgba(255,255,255," + (a * 0.95) + ")" : barColor(b.lum, a);
+        bctx.fillStyle = b.hot ? "rgba(231,238,252," + (a * 0.95) + ")" : barColor(b.lum, a);
         bctx.fillRect(b.x, b.y, b.w, b.h);
 
         // 太い柱には明るい芯を入れて奥行きを出す
@@ -356,12 +357,12 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.globalAlpha = 1;
         var sg = ctx.createLinearGradient(0, y - H * 0.09, 0, y + hh + H * 0.02);
-        sg.addColorStop(0,   "rgba(160,200,255,0)");
-        sg.addColorStop(0.8, "rgba(190,220,255,.30)");
-        sg.addColorStop(1,   "rgba(255,255,255,0)");
+        sg.addColorStop(0,   "rgba(79,140,255,0)");
+        sg.addColorStop(0.8, "rgba(170,205,255,.30)");
+        sg.addColorStop(1,   "rgba(231,238,252,0)");
         ctx.fillStyle = sg;
         ctx.fillRect(0, y - H * 0.09, W, H * 0.11 + hh);
-        ctx.fillStyle = "rgba(255,255,255,.85)";
+        ctx.fillStyle = "rgba(231,238,252,.9)";
         ctx.fillRect(0, y, W, hh);
       }
 

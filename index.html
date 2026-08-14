@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja" style="background-color: #000;">
+<html lang="ja" style="background-color: #0b1220;">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
@@ -16,13 +16,13 @@
        ヒラギノ角ゴ ProN は W3/W6 しか無く、900 指定が偽ボールドになって字が痩せて見えていた。 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&text=%E3%83%91%E3%83%81%E3%82%B9%E3%83%AD%E5%8F%8E%E6%94%AF%E7%AE%A1%E7%90%86&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#0b1220" />
 
   <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     width: 100%; height: 100%;
-    background-color: #000 !important;
+    background-color: #0b1220 !important;
     overflow: hidden;
     font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Noto Sans JP', sans-serif;
   }
@@ -40,7 +40,8 @@
 
   #splashScreen {
     position: fixed; inset: 0; z-index: 99999;
-    background: #000;
+    /* 中心は --bg そのもの。周辺だけ落として奥行きを出す。 */
+    background: radial-gradient(ellipse 82% 62% at 50% 46%, #111c36 0%, #0b1220 55%, #070c16 100%);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
     transition: opacity .5s ease;
@@ -61,12 +62,12 @@
   }
   #splashFlash.f-lock {
     background: radial-gradient(ellipse 78% 22% at 50% 46%,
-      rgba(255,255,255,.5) 0%, rgba(186,214,255,.2) 42%, rgba(110,155,255,0) 74%);
+      rgba(231,238,252,.5) 0%, rgba(79,140,255,.22) 42%, rgba(79,140,255,0) 74%);
     animation: fLock .5s ease-out forwards;
   }
   #splashFlash.f-out {
     background: radial-gradient(ellipse 92% 34% at 50% 46%,
-      rgba(255,255,255,.72) 0%, rgba(255,236,196,.34) 40%, rgba(255,180,80,0) 76%);
+      rgba(231,238,252,.7) 0%, rgba(79,140,255,.32) 40%, rgba(20,28,77,0) 76%);
     animation: fOut .42s ease-out forwards;
   }
   @keyframes fLock { 0%{opacity:0} 14%{opacity:1} 100%{opacity:0} }
@@ -87,19 +88,19 @@
     line-height: 1;
     letter-spacing: 0;
     white-space: nowrap;
-    color: #fff;
+    color: #e7eefc;
     opacity: 0;
     will-change: opacity, transform;
   }
 
-  /* 確定：文字が現れ、暖色のハイライトが左から右へ一度だけ走る */
+  /* 確定：文字が現れ、明るいハイライトが左から右へ一度だけ走る */
   .sp-title.lit {
-    filter: drop-shadow(0 0 22px rgba(125,170,255,.34));
+    filter: drop-shadow(0 0 22px rgba(79,140,255,.38));
     animation: titleIn .26s ease-out both,
                titleSweep 1.05s cubic-bezier(.36,0,.16,1) .08s both;
   }
   /* 背景を 250% 幅にして 100%→0% へ動かす。この範囲なら文字は常に
-     グラデーションで覆われたまま（＝白いまま）、暖色の帯だけが横切る。
+     グラデーションで覆われたまま（＝地の色のまま）、明るい帯だけが横切る。
      0〜100% の外へ出すと背景が字から外れて透明になり、文字が消える。 */
   @supports ((-webkit-background-clip: text) or (background-clip: text)) {
     .sp-title.lit {
@@ -110,9 +111,9 @@
       background-size: 250% 100%;
       background-position: 100% 0;
       background-image: linear-gradient(100deg,
-        #ffffff 0%, #ffffff 42%,
-        #fff7e0 47%, #ffd98f 50%, #fff7e0 53%,
-        #ffffff 58%, #ffffff 100%);
+        #e7eefc 0%, #e7eefc 42%,
+        #f5f9ff 47%, #ffffff 50%, #f5f9ff 53%,
+        #e7eefc 58%, #e7eefc 100%);
     }
   }
   @keyframes titleIn    { from { opacity: 0 } to { opacity: 1 } }
@@ -128,7 +129,7 @@
   .sp-rule {
     width: 0; height: 1px; margin-top: 20px;
     background: linear-gradient(90deg, transparent,
-      rgba(226,176,80,.75) 24%, rgba(255,228,168,1) 50%, rgba(226,176,80,.75) 76%, transparent);
+      rgba(79,140,255,.7) 24%, rgba(170,205,255,1) 50%, rgba(79,140,255,.7) 76%, transparent);
     transition: width .72s cubic-bezier(.16,.84,.28,1), opacity .3s ease;
   }
   .sp-rule.show { width: min(58vw, 300px); }
@@ -142,7 +143,7 @@
     line-height: 1;
     margin-top: 17px;
     letter-spacing: .5em; text-indent: .5em;
-    color: rgba(203,216,238,.9);
+    color: #9fb0d0;
     opacity: 0;
     white-space: nowrap;
   }
@@ -157,13 +158,13 @@
   /* 動きを減らす設定の端末では、演出を省いて静かに表示する */
   @media (prefers-reduced-motion: reduce) {
     .sp-title, .sp-rule, .sp-sub, #splashFlash { animation: none !important; transition: none !important; }
-    .sp-title { opacity: 1; color: #fff; background: none; }
+    .sp-title { opacity: 1; color: #e7eefc; background: none; }
     .sp-sub   { opacity: 1; }
     .sp-rule.show { width: min(58vw, 300px); }
   }
   </style>
 </head>
-<body class="navy-ui" style="background-color: #000;">
+<body class="navy-ui" style="background-color: #0b1220;">
 
   <div id="splashScreen">
     <canvas id="splashStage"></canvas>
